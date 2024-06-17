@@ -1,0 +1,144 @@
+{
+	"info": {
+		"_postman_id": "1f5f8369-7a30-4103-975c-16af9814c0e5",
+		"name": "Weatherization",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11750253"
+	},
+	"item": [
+		{
+			"name": "Get Inventory Item",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:7136/Inventory/1",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7136",
+					"path": [
+						"Inventory",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get ALL Inventory Items",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:7136/Inventory",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7136",
+					"path": [
+						"Inventory"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Units",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:7136/Inventory",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7136",
+					"path": [
+						"Inventory"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Inventory Item",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"description\": \"Test Item\",\r\n    \"cost\": 22.50,\r\n    \"units\": \"Boxes\",\r\n    \"startingAmount\": 14.00,\r\n    \"remaining\": 10,\r\n    \"purchaseDate\": \"2024-01-01T00:00:00\",\r\n    \"lastModified\": \"2024-01-02T00:00:00\",\r\n    \"created\": \"2023-01-01T00:00:00\",\r\n    \"createdBy\": \"Blaze\",\r\n    \"lastModifiedBy\": \"Blaze\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:7136/Inventory",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7136",
+					"path": [
+						"Inventory"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Inventory Item",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": \"1\",\r\n    \"description\": \"Test Item 3\",\r\n    \"cost\": 18.50,\r\n    \"units\": \"Boxes\",\r\n    \"startingAmount\": 13.00,\r\n    \"remaining\": 11.5,\r\n    \"purchaseDate\": \"2024-01-05T00:00:00\",\r\n    \"lastModified\": \"2024-01-06T00:00:00\",\r\n    \"created\": \"2023-01-02T00:00:00\",\r\n    \"createdBy\": \"Ben\",\r\n    \"lastModifiedBy\": \"Ben\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:7136/Inventory",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7136",
+					"path": [
+						"Inventory"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Inventory Item",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:7136/Inventory/1",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "7136",
+					"path": [
+						"Inventory",
+						"1"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
