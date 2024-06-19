@@ -10,6 +10,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<IInventoryProvider, InventoryProvider>();
 builder.Services.AddSingleton<InventoryDataProvider>();
 builder.Services.AddSingleton<UserDataProvider>();
+builder.Services.AddSingleton<WorkOrderDataProvider>();
+builder.Services.AddSingleton<WorkOrderProvider>();
 
 var app = builder.Build();
 
