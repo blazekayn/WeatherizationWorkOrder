@@ -28,3 +28,18 @@ GO
 
 ALTER TABLE [dbo].[WO_USER] ADD  CONSTRAINT [DF_WO_USER_Deleted]  DEFAULT ((0)) FOR [Deleted]
 GO
+
+CREATE TABLE [dbo].[WORK_ORDER](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Consumer] [nvarchar](255) NULL,
+	[PreparedBy] [nvarchar](255) NULL,
+	[Description] [nvarchar](max) NULL,
+	[PreparedDate] [datetime] NULL,
+	[LastModifiedBy] [nvarchar](255) NULL,
+	[LastModified] [datetime] NULL,
+ CONSTRAINT [PK_WORK_ORDER] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
