@@ -33,9 +33,9 @@ export function Grid(props) {
         rowData={rowData}
         columnDefs={colDefs}
         defaultColDef={defaultColDef}
+        onSelectionChanged={props.onSelectionChanged}
         pagination={true}
-        rowSelection="multiple"
-        onSelectionChanged={(event) => console.log("Row Selected!")}
+        rowSelection="single"
         onCellValueChanged={(event) =>
           console.log(`New Cell Value: ${event.value}`)
         }

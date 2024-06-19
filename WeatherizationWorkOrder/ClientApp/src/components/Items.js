@@ -50,7 +50,6 @@ export function Items() {
     {
       field: "id",
       width: 90,
-      checkboxSelection: true,
     },
     {
       field: "description",

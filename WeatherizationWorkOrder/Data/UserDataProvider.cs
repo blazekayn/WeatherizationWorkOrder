@@ -74,5 +74,21 @@ namespace WeatherizationWorkOrder.Data
                 }
             }
         }
+
+        public async Task Update(int id, string name)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                string sql = $"UPDATE WO_USER SET name=@name WHERE Id=@Id";
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = id;
+                    cmd.Parameters.Add("@name", System.Data.SqlDbType.NVarChar).Value = name;
+
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+        }
     }
 }

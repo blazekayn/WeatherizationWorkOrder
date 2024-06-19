@@ -37,5 +37,11 @@ namespace WeatherizationWorkOrder.Controllers
         {
             await _userProvider.Delete(id);
         }
+
+        [HttpPost("{id}")]
+        public async Task Update(int id, [FromBody] string name)
+        {
+            await _userProvider.Update(id, name);
+        }
     }
 }

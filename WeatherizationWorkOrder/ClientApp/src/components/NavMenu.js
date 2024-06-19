@@ -30,7 +30,7 @@ export function NavMenu() {
         <Navbar className="navbar-expand-sm" container light>
           <Container>
             <Row className="align-items-center">
-              <Col xs="8">
+              <Col xs="7">
               <NavbarBrand tag={Link} to="/">Weatherization Work Orders</NavbarBrand>
               </Col>
               <Col xs="1">
@@ -41,6 +41,11 @@ export function NavMenu() {
               <Col xs="1">
               <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/work-order">Work Order</NavLink>
+              </NavItem>
+              </Col>
+              <Col xs="1">
+              <NavItem>
+                <NavLink tag={Link} className="text-dark" to="/users">Users</NavLink>
               </NavItem>
               </Col>
               <Col xs="2">

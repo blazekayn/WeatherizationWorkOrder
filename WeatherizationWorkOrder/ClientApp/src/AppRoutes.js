@@ -1,4 +1,5 @@
 import { Items } from "./components/Items";
+import { Users } from "./components/Users";
 
 const AppRoutes = [
   {
@@ -8,6 +9,10 @@ const AppRoutes = [
   {
     path: '/work-order',
     element: <Items />
+  },
+  {
+    path: '/users',
+    element: <Users />
   }
 ];
 
