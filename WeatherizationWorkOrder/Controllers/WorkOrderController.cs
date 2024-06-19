@@ -10,21 +10,27 @@ namespace WeatherizationWorkOrder.Controllers
     [Route("[controller]")]
     public class WorkOrderController : ControllerBase
     {
-        private readonly ILogger<InventoryController> _logger;
+        private readonly ILogger<WorkOrderController> _logger;
         private readonly WorkOrderProvider _workOrderProvider;
 
-        public WorkOrderController(ILogger<InventoryController> logger,
+        public WorkOrderController(ILogger<WorkOrderController> logger,
             WorkOrderProvider workOrderProvider)
         {
             _logger = logger;
             _workOrderProvider = workOrderProvider;
         }
 
-        //[HttpGet]
-        //public async Task<List<User>> Get()
-        //{
-        //    return await _userProvider.Read();
-        //}
+        [HttpGet]
+        public async Task<List<WorkOrder>> Get()
+        {
+            return await _workOrderProvider.GetAllWorkOrders();
+        }
+
+        [HttpGet("{id}")]
+        public async Task<WorkOrder> Get(int id)
+        {
+            return await _workOrderProvider.GetWorkOrderByID(id);
+        }
 
         [HttpPut]
         public async Task Put([FromBody] WorkOrder workOrder)
@@ -32,10 +38,15 @@ namespace WeatherizationWorkOrder.Controllers
             await _workOrderProvider.CreateWorkOrder(workOrder);
         }
 
-        //[HttpDelete("{id}")]
-        //public async Task Delete(int id)
-        //{
-        //    await _userProvider.Delete(id);
-        //}
+        [HttpDelete("{id}")]
+        public async Task Delete(int id)
+        {
+            await _workOrderProvider.DeleteWorkOrder(id);
+        }
+        [HttpPost]
+        public async Task Update([FromBody] WorkOrder workOrder)
+        {
+            await _workOrderProvider.UpdateWorkOrder(workOrder);
+        }
     }
 }

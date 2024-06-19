@@ -22,30 +22,30 @@ namespace WeatherizationWorkOrder.Data
             {
                 conn.Open();
 
-                string sql = "INSERT INTO[WORK_ORDER](Consumer, PreparedBy, Description, PreparedDate, LastModifiedBy, LastModified) " +
-                             "VALUES('Aaron', 'Tina', 'oijpoij', '01/01/2024', 'Aaron', '06/19/2024')";
-                //string sql = $"INSERT INTO [WORK_ORDER] (Consumer, PreparedBy, Description, PreparedDate, LastModifiedBy, LastModified) " +
-                //             $"VALUES (@Consumer, @PreparedBy, @Description, @PreparedDate, @LastModifiedBy, @LastModified)";
+               // string sql = "INSERT INTO[WORK_ORDER](Consumer, PreparedBy, Description, PreparedDate, LastModifiedBy, LastModified) " +
+                 //            "VALUES('Aaron', 'Tina', 'oijpoij', '01/01/2024', 'Aaron', '06/19/2024')";
+                string sql = $"INSERT INTO [WORK_ORDER] (Consumer, PreparedBy, Description, PreparedDate, LastModifiedBy, LastModified) " +
+                             $"VALUES (@Consumer, @PreparedBy, @Description, @PreparedDate, @LastModifiedBy, @LastModified)";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
-                    //cmd.Parameters.Add("@Consumer", System.Data.SqlDbType.NVarChar).Value = item.Consumer;
-                    //cmd.Parameters.Add("@PreparedBy", System.Data.SqlDbType.NVarChar).Value = item.PreparedBy;
-                    //cmd.Parameters.Add("@Description", System.Data.SqlDbType.NVarChar).Value = item.Description;
-                    //cmd.Parameters.Add("@PreparedDate", System.Data.SqlDbType.DateTime).Value = item.PreparedDate;
-                    //cmd.Parameters.Add("@LastModifiedBy", System.Data.SqlDbType.NVarChar).Value = item.LastModifiedBy;
-                    //cmd.Parameters.Add("@LastModified", System.Data.SqlDbType.DateTime).Value = item.LastModified;
+                    cmd.Parameters.Add("@Consumer", System.Data.SqlDbType.NVarChar).Value = item.Consumer;
+                    cmd.Parameters.Add("@PreparedBy", System.Data.SqlDbType.NVarChar).Value = item.PreparedBy;
+                    cmd.Parameters.Add("@Description", System.Data.SqlDbType.NVarChar).Value = item.Description;
+                    cmd.Parameters.Add("@PreparedDate", System.Data.SqlDbType.DateTime).Value = item.PreparedDate;
+                    cmd.Parameters.Add("@LastModifiedBy", System.Data.SqlDbType.NVarChar).Value = item.LastModifiedBy;
+                    cmd.Parameters.Add("@LastModified", System.Data.SqlDbType.DateTime).Value = item.LastModified;
 
                     await cmd.ExecuteNonQueryAsync();
                 }
             }
         }
 
-        public async Task<InventoryItem> Read(int id)
+        public async Task<WorkOrder> Read(int id)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string sql = $"SELECT * FROM INVENTORY_ITEM WHERE Id=@Id";
+                string sql = $"SELECT * FROM WORK_ORDER WHERE Id=@Id";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = id;
@@ -54,21 +54,17 @@ namespace WeatherizationWorkOrder.Data
                         if (dr != null && dr.HasRows)
                         {
                             await dr.ReadAsync();
-                            InventoryItem item = new InventoryItem
+                            WorkOrder workOrder = new WorkOrder
                             {
                                 Id = dr.GetInt32("Id"),
+                                Consumer = dr.GetString("Consumer"),
+                                PreparedBy = dr.GetString("PreparedBy"),
                                 Description = dr.GetString("Description"),
-                                Cost = dr.GetDecimal("Cost"),
-                                Units = dr.GetString("Units"),
-                                StartingAmount = dr.GetDecimal("StartingAmount"),
-                                Remaining = dr.GetDecimal("Remaining"),
-                                PurchaseDate = dr.GetDateTime("PurchaseDate"),
-                                LastModified = dr.GetDateTime("LastModified"),
-                                Created = dr.GetDateTime("Created"),
-                                CreatedBy = dr.GetString("CreatedBy"),
+                                PreparedDate = dr.GetDateTime("PreparedDate"),
                                 LastModifiedBy = dr.GetString("LastModifiedBy"),
+                                LastModified = dr.GetDateTime("LastModified"),
                             };
-                            return item;
+                            return workOrder;
                         }
                     }
                 }
@@ -76,40 +72,36 @@ namespace WeatherizationWorkOrder.Data
             return default;
         }
 
-        public async Task<List<InventoryItem>> Read(bool showOutOfStock)
+        public async Task<List<WorkOrder>> Read()
         {
-            List<InventoryItem> items = new List<InventoryItem>();
+            List<WorkOrder> items = new List<WorkOrder>();
 
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string sql = $"SELECT * FROM INVENTORY_ITEM ";
-                if (!showOutOfStock)
-                {
-                    sql += " WHERE Remaining > 0 ";
-                }
-                    sql += "ORDER BY PurchaseDate desc";
+                string sql = $"SELECT * FROM WORK_ORDER ORDER BY PreparedDate DESC";
+                //if (!showOutOfStock)
+                //{
+                //    sql += " WHERE Remaining > 0 ";
+                //}
+                //    sql += "ORDER BY PurchaseDate desc";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     using (SqlDataReader dr = cmd.ExecuteReader())
                     {
                         while (await dr.ReadAsync())
                         {
-                            InventoryItem item = new InventoryItem
+                            WorkOrder workOrder = new WorkOrder
                             {
                                 Id = dr.GetInt32("Id"),
+                                Consumer = dr.GetString("Consumer"),
+                                PreparedBy = dr.GetString("PreparedBy"),
                                 Description = dr.GetString("Description"),
-                                Cost = dr.GetDecimal("Cost"),
-                                Units = dr.GetString("Units"),
-                                StartingAmount = dr.GetDecimal("StartingAmount"),
-                                Remaining = dr.GetDecimal("Remaining"),
-                                PurchaseDate = dr.GetDateTime("PurchaseDate"),
+                                PreparedDate = dr.GetDateTime("PreparedDate"),
+                                LastModifiedBy = dr.GetString("LastModifiedBy"),
                                 LastModified = dr.GetDateTime("LastModified"),
-                                Created = dr.GetDateTime("Created"),
-                                CreatedBy = dr.GetString("CreatedBy"),
-                                LastModifiedBy = dr.GetString("LastModifiedBy")
                             };
-                            items.Add(item);
+                            items.Add(workOrder);
                         }
                     }
                 }
@@ -117,36 +109,26 @@ namespace WeatherizationWorkOrder.Data
             return items;
         }
 
-        public async Task Update(InventoryItem item)
+        public async Task Update(WorkOrder workOrder)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string sql = $"UPDATE [INVENTORY_ITEM] SET " +
+                string sql = $"UPDATE [WORK_ORDER] SET " +
+                             $"Consumer=@Consumer, " +
+                             $"PreparedBy=@PreparedBy, " +
                              $"Description=@Description, " +
-                             $"Cost=@Cost, " +
-                             $"Units=@Units, " +
-                             $"StartingAmount=@StartingAmount, " +
-                             $"Remaining=@Remaining, " +
-                             $"PurchaseDate=@PurchaseDate, " +
-                             $"LastModified=@LastModified, " +
-                             $"Created=@Created, " +
-                             $"CreatedBy=@CreatedBy, " +
-                             $"LastModifiedBy=@LastModifiedBy " +
-                             $"WHERE Id=@Id";
+                             $"PreparedDate=@PreparedDate, " +
+                             $"LastModifiedBy=@LastModifiedBy, " +
+                             $"LastModified=@LastModified";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
-                    cmd.Parameters.Add("@Description", System.Data.SqlDbType.NVarChar).Value = item.Description;
-                    cmd.Parameters.Add("@Cost", System.Data.SqlDbType.Decimal).Value = item.Cost;
-                    cmd.Parameters.Add("@Units", System.Data.SqlDbType.NVarChar).Value = item.Units;
-                    cmd.Parameters.Add("@StartingAmount", System.Data.SqlDbType.Decimal).Value = item.StartingAmount;
-                    cmd.Parameters.Add("@Remaining", System.Data.SqlDbType.Decimal).Value = item.Remaining;
-                    cmd.Parameters.Add("@PurchaseDate", System.Data.SqlDbType.DateTime).Value = item.PurchaseDate;
-                    cmd.Parameters.Add("@LastModified", System.Data.SqlDbType.DateTime).Value = item.LastModified;
-                    cmd.Parameters.Add("@Created", System.Data.SqlDbType.DateTime).Value = item.Created;
-                    cmd.Parameters.Add("@CreatedBy", System.Data.SqlDbType.NVarChar).Value = item.CreatedBy;
-                    cmd.Parameters.Add("@LastModifiedBy", System.Data.SqlDbType.NVarChar).Value = item.LastModifiedBy;
-                    cmd.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = item.Id;
+                    cmd.Parameters.Add("@Consumer", System.Data.SqlDbType.NVarChar).Value = workOrder.Consumer;
+                    cmd.Parameters.Add("@PreparedBy", System.Data.SqlDbType.NVarChar).Value = workOrder.PreparedBy;
+                    cmd.Parameters.Add("@Description", System.Data.SqlDbType.NVarChar).Value = workOrder.Description;
+                    cmd.Parameters.Add("@PreparedDate", System.Data.SqlDbType.DateTime).Value = workOrder.PreparedDate;
+                    cmd.Parameters.Add("@LastModifiedBy", System.Data.SqlDbType.NVarChar).Value = workOrder.LastModifiedBy;
+                    cmd.Parameters.Add("@LastModified", System.Data.SqlDbType.DateTime).Value = workOrder.LastModified;
 
                     await cmd.ExecuteNonQueryAsync();
                 }
@@ -158,7 +140,7 @@ namespace WeatherizationWorkOrder.Data
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string sql = $"DELETE FROM [INVENTORY_ITEM] WHERE Id=@Id ";
+                string sql = $"DELETE FROM [WORK_ORDER] WHERE Id=@Id ";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = id;
@@ -175,7 +157,7 @@ namespace WeatherizationWorkOrder.Data
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string sql = $"SELECT DISTINCT units FROM INVENTORY_ITEM ";
+                string sql = $"SELECT DISTINCT units FROM WORK_ORDER ";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     using (SqlDataReader dr = cmd.ExecuteReader())

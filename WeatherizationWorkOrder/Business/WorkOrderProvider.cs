@@ -21,29 +21,29 @@ namespace WeatherizationWorkOrder.Business
             await _workOrderDataProvider.Create(workOrder);
         }
 
-        //        public async Task DeleteInventoryItem(int id)
-        //        {
-        //            await _inventoryDataProvider.Delete(id);
-        //        }
+        public async Task DeleteWorkOrder(int id)
+        {
+            await _workOrderDataProvider.Delete(id);
+        }
 
-        //        public async Task<List<InventoryItem>> GetAllInventoryItems(bool showOutOfStock)
-        //        {
-        //            return await _inventoryDataProvider.Read(showOutOfStock);
-        //        }
+        public async Task<List<WorkOrder>> GetAllWorkOrders()
+        {
+            return await _workOrderDataProvider.Read();
+        }
 
-        //        public async Task<InventoryItem> GetInventoryItemById(int id)
-        //        {
-        //            return await _inventoryDataProvider.Read(id);
-        //        }
+        public async Task<WorkOrder> GetWorkOrderByID(int id)
+        {
+            return await _workOrderDataProvider.Read(id);
+        }
 
-        //        public async Task UpdateInventoryItem(InventoryItem item)
-        //        {
-        //            await _inventoryDataProvider.Update(item);
-        //        }
+        public async Task UpdateWorkOrder(WorkOrder workOrder)
+        {
+            await _workOrderDataProvider.Update(workOrder);
+        }
 
-        //        public async Task<List<string>> GetUnits()
-        //        {
-        //            return await _inventoryDataProvider.ReadUnits();
-    // }
-}
+        public async Task<List<string>> GetUnits()
+        {
+            return await _workOrderDataProvider.ReadUnits();
+        }
+    }
 }
