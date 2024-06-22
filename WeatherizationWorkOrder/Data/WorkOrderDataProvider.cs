@@ -80,11 +80,6 @@ namespace WeatherizationWorkOrder.Data
             {
                 conn.Open();
                 string sql = $"SELECT * FROM WORK_ORDER ORDER BY PreparedDate DESC";
-                //if (!showOutOfStock)
-                //{
-                //    sql += " WHERE Remaining > 0 ";
-                //}
-                //    sql += "ORDER BY PurchaseDate desc";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     using (SqlDataReader dr = cmd.ExecuteReader())
@@ -148,28 +143,6 @@ namespace WeatherizationWorkOrder.Data
                     await cmd.ExecuteNonQueryAsync();
                 }
             }
-        }
-
-        public async Task<List<string>> ReadUnits()
-        {
-            List<string> units = new List<string>();
-
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                conn.Open();
-                string sql = $"SELECT DISTINCT units FROM WORK_ORDER ";
-                using (SqlCommand cmd = new SqlCommand(sql, conn))
-                {
-                    using (SqlDataReader dr = cmd.ExecuteReader())
-                    {
-                        while (await dr.ReadAsync())
-                        {
-                            units.Add(dr.GetString("Units"));
-                        }
-                    }
-                }
-            }
-            return units;
         }
     }
 }

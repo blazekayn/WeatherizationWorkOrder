@@ -40,10 +40,5 @@ namespace WeatherizationWorkOrder.Business
         {
             await _workOrderDataProvider.Update(workOrder);
         }
-
-        public async Task<List<string>> GetUnits()
-        {
-            return await _workOrderDataProvider.ReadUnits();
-        }
     }
 }
