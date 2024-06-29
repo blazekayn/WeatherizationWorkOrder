@@ -48,5 +48,11 @@ namespace WeatherizationWorkOrder.Controllers
         {
             await _workOrderProvider.UpdateWorkOrder(workOrder);
         }
+
+        [HttpPost]
+        public async Task AddMaterial([FromBody] AddMaterialRequest addMaterialRequest)
+        {
+            await _workOrderProvider.AddMaterialToWorkOrder(addMaterialRequest);
+        }
     }
 }

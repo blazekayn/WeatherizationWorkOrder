@@ -144,5 +144,10 @@ namespace WeatherizationWorkOrder.Data
                 }
             }
         }
+
+        public async Task AddMaterial(string id, int woId, decimal amount)
+        {
+
+        }
     }
 }

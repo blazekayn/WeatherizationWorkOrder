@@ -76,6 +76,45 @@ namespace WeatherizationWorkOrder.Data
             return default;
         }
 
+        public async Task<List<InventoryItem>> ReadByDesc(string desc)
+        {
+            List<InventoryItem> items = new List<InventoryItem>();
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                string sql = $"SELECT * FROM INVENTORY_ITEM WHERE UPPER(Description) = UPPER(@Description) ";
+                sql += "AND Remaining > 0 ";
+                sql += "ORDER BY PurchaseDate desc";
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.Add("@Description", System.Data.SqlDbType.NVarChar).Value = desc;
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (await dr.ReadAsync())
+                        {
+                            InventoryItem item = new InventoryItem
+                            {
+                                Id = dr.GetInt32("Id"),
+                                Description = dr.GetString("Description"),
+                                Cost = dr.GetDecimal("Cost"),
+                                Units = dr.GetString("Units"),
+                                StartingAmount = dr.GetDecimal("StartingAmount"),
+                                Remaining = dr.GetDecimal("Remaining"),
+                                PurchaseDate = dr.GetDateTime("PurchaseDate"),
+                                LastModified = dr.GetDateTime("LastModified"),
+                                Created = dr.GetDateTime("Created"),
+                                CreatedBy = dr.GetString("CreatedBy"),
+                                LastModifiedBy = dr.GetString("LastModifiedBy")
+                            };
+                            items.Add(item);
+                        }
+                    }
+                }
+            }
+            return items;
+        }
+
         public async Task<List<InventoryItem>> Read(bool showOutOfStock)
         {
             List<InventoryItem> items = new List<InventoryItem>();

@@ -27,7 +27,7 @@ export function Grid(props) {
       className={
         "ag-theme-quartz-dark"
       }
-      style={{ width: "100%", height: "500px" }}
+      style={{ width: "100%", height: props.height ? props.height : "500px" }}
     >
       <AgGridReact
         rowData={rowData}
