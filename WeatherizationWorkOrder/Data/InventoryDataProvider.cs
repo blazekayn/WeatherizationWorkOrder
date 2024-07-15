@@ -76,19 +76,20 @@ namespace WeatherizationWorkOrder.Data
             return default;
         }
 
-        public async Task<List<InventoryItem>> ReadByDesc(string desc)
+        public async Task<List<InventoryItem>> ReadByDesc(string desc, string units)
         {
             List<InventoryItem> items = new List<InventoryItem>();
 
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string sql = $"SELECT * FROM INVENTORY_ITEM WHERE UPPER(Description) = UPPER(@Description) ";
+                string sql = $"SELECT * FROM INVENTORY_ITEM WHERE UPPER(Description) = UPPER(@Description) AND UPPER(Units) = UPPER(@Units)";
                 sql += "AND Remaining > 0 ";
                 sql += "ORDER BY PurchaseDate desc";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.Add("@Description", System.Data.SqlDbType.NVarChar).Value = desc;
+                    cmd.Parameters.Add("@Units", System.Data.SqlDbType.NVarChar).Value = units;
                     using (SqlDataReader dr = cmd.ExecuteReader())
                     {
                         while (await dr.ReadAsync())
@@ -115,40 +116,63 @@ namespace WeatherizationWorkOrder.Data
             return items;
         }
 
-        public async Task<List<InventoryItem>> Read(bool showOutOfStock)
+        public async Task<List<InventoryItem>> Read(bool showOutOfStock, bool unique)
         {
             List<InventoryItem> items = new List<InventoryItem>();
 
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string sql = $"SELECT * FROM INVENTORY_ITEM ";
+                string sql = "";
+                if (unique)
+                {
+                    sql = "SELECT DISTINCT description, units FROM INVENTORY_ITEM ";
+                }
+                else
+                {
+                    sql = $"SELECT * FROM INVENTORY_ITEM ";
+                }
                 if (!showOutOfStock)
                 {
                     sql += " WHERE Remaining > 0 ";
                 }
+                if (!unique)
+                {
                     sql += "ORDER BY PurchaseDate desc";
+                }
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     using (SqlDataReader dr = cmd.ExecuteReader())
                     {
                         while (await dr.ReadAsync())
                         {
-                            InventoryItem item = new InventoryItem
+                            if (unique)
                             {
-                                Id = dr.GetInt32("Id"),
-                                Description = dr.GetString("Description"),
-                                Cost = dr.GetDecimal("Cost"),
-                                Units = dr.GetString("Units"),
-                                StartingAmount = dr.GetDecimal("StartingAmount"),
-                                Remaining = dr.GetDecimal("Remaining"),
-                                PurchaseDate = dr.GetDateTime("PurchaseDate"),
-                                LastModified = dr.GetDateTime("LastModified"),
-                                Created = dr.GetDateTime("Created"),
-                                CreatedBy = dr.GetString("CreatedBy"),
-                                LastModifiedBy = dr.GetString("LastModifiedBy")
-                            };
-                            items.Add(item);
+                                InventoryItem item = new InventoryItem
+                                {
+                                    Description = dr.GetString("Description"),
+                                    Units = dr.GetString("Units"),
+                                };
+                                items.Add(item);
+                            }
+                            else
+                            {
+                                InventoryItem item = new InventoryItem
+                                {
+                                    Id = dr.GetInt32("Id"),
+                                    Description = dr.GetString("Description"),
+                                    Cost = dr.GetDecimal("Cost"),
+                                    Units = dr.GetString("Units"),
+                                    StartingAmount = dr.GetDecimal("StartingAmount"),
+                                    Remaining = dr.GetDecimal("Remaining"),
+                                    PurchaseDate = dr.GetDateTime("PurchaseDate"),
+                                    LastModified = dr.GetDateTime("LastModified"),
+                                    Created = dr.GetDateTime("Created"),
+                                    CreatedBy = dr.GetString("CreatedBy"),
+                                    LastModifiedBy = dr.GetString("LastModifiedBy")
+                                };
+                                items.Add(item);
+                            }
                         }
                     }
                 }

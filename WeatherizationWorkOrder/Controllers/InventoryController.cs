@@ -33,9 +33,9 @@ namespace WeatherizationWorkOrder.Controllers
 
 
         [HttpGet]
-        public async Task<List<InventoryItem>> Get([FromQuery(Name = "showOOS")] bool showOutOfStock)
+        public async Task<List<InventoryItem>> Get([FromQuery(Name = "showOOS")] bool showOutOfStock, [FromQuery(Name = "unique")] bool unique)
         {
-            return await _inventoryProvider.GetAllInventoryItems(showOutOfStock);
+            return await _inventoryProvider.GetAllInventoryItems(showOutOfStock, unique);
         }
 
         [HttpPost]

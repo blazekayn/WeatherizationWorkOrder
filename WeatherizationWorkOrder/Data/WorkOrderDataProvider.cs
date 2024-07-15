@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.Features;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Data.SqlClient;
 using System.Collections.Generic;
 using System.Data;
@@ -16,15 +17,13 @@ namespace WeatherizationWorkOrder.Data
             _connectionString = _configuration?.GetConnectionString("Weatherization");
         }
 
-        public async Task Create(WorkOrder item)
+        public async Task<int> Create(WorkOrder item)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-
-               // string sql = "INSERT INTO[WORK_ORDER](Consumer, PreparedBy, Description, PreparedDate, LastModifiedBy, LastModified) " +
-                 //            "VALUES('Aaron', 'Tina', 'oijpoij', '01/01/2024', 'Aaron', '06/19/2024')";
                 string sql = $"INSERT INTO [WORK_ORDER] (Consumer, PreparedBy, Description, PreparedDate, LastModifiedBy, LastModified) " +
+                             $"OUTPUT Inserted.ID " +
                              $"VALUES (@Consumer, @PreparedBy, @Description, @PreparedDate, @LastModifiedBy, @LastModified)";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
@@ -35,7 +34,7 @@ namespace WeatherizationWorkOrder.Data
                     cmd.Parameters.Add("@LastModifiedBy", System.Data.SqlDbType.NVarChar).Value = item.LastModifiedBy;
                     cmd.Parameters.Add("@LastModified", System.Data.SqlDbType.DateTime).Value = item.LastModified;
 
-                    await cmd.ExecuteNonQueryAsync();
+                    return (int)await cmd.ExecuteScalarAsync();
                 }
             }
         }
@@ -104,6 +103,38 @@ namespace WeatherizationWorkOrder.Data
             return items;
         }
 
+        public async Task<List<Material>> ReadMaterials(int id)
+        {
+            List<Material> items = new List<Material>();
+
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                string sql = $"SELECT WM.Id, I.Description, I.Cost, WM.UnitsUsed, I.Cost * WM.UnitsUsed As Total FROM WO_MATERIAL WM JOIN INVENTORY_ITEM I ON WM.InventoryItemId = I.Id WHERE WM.WorkOrderId=@WorkOrderId";
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.Add("@WorkOrderId", System.Data.SqlDbType.Int).Value = id;
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (await dr.ReadAsync())
+                        {
+                            Material item = new Material
+                            {
+                                Id = dr.GetInt32("Id"),
+                                Description = dr.GetString("Description"),
+                                CostPer = dr.GetDecimal("Cost"),
+                                AmountUsed = dr.GetDecimal("UnitsUsed"),
+                                Total = dr.GetDecimal("Total")
+
+                            };
+                            items.Add(item);
+                        }
+                    }
+                }
+            }
+            return items;
+        }
+
         public async Task Update(WorkOrder workOrder)
         {
             using (SqlConnection conn = new SqlConnection(_connectionString))
@@ -113,15 +144,15 @@ namespace WeatherizationWorkOrder.Data
                              $"Consumer=@Consumer, " +
                              $"PreparedBy=@PreparedBy, " +
                              $"Description=@Description, " +
-                             $"PreparedDate=@PreparedDate, " +
                              $"LastModifiedBy=@LastModifiedBy, " +
-                             $"LastModified=@LastModified";
+                             $"LastModified=@LastModified " +
+                             $"WHERE Id=@Id; ";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
+                    cmd.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = workOrder.Id;
                     cmd.Parameters.Add("@Consumer", System.Data.SqlDbType.NVarChar).Value = workOrder.Consumer;
                     cmd.Parameters.Add("@PreparedBy", System.Data.SqlDbType.NVarChar).Value = workOrder.PreparedBy;
                     cmd.Parameters.Add("@Description", System.Data.SqlDbType.NVarChar).Value = workOrder.Description;
-                    cmd.Parameters.Add("@PreparedDate", System.Data.SqlDbType.DateTime).Value = workOrder.PreparedDate;
                     cmd.Parameters.Add("@LastModifiedBy", System.Data.SqlDbType.NVarChar).Value = workOrder.LastModifiedBy;
                     cmd.Parameters.Add("@LastModified", System.Data.SqlDbType.DateTime).Value = workOrder.LastModified;
 
@@ -145,9 +176,40 @@ namespace WeatherizationWorkOrder.Data
             }
         }
 
-        public async Task AddMaterial(string id, int woId, decimal amount)
+        public async Task AddMaterial(int id, int woId, decimal amount)
         {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                string sql = $"INSERT INTO [WO_MATERIAL] (WorkOrderId, InventoryItemId, UnitsUsed) " +
+                             $"VALUES (@WorkOrderId, @InventoryItemId, @UnitsUsed)";
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.Add("@WorkOrderId", System.Data.SqlDbType.Int).Value = woId;
+                    cmd.Parameters.Add("@InventoryItemId", System.Data.SqlDbType.Int).Value = id;
+                    cmd.Parameters.Add("@UnitsUsed", System.Data.SqlDbType.Decimal).Value = amount;
 
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
+        }
+        public async Task AddLabor(int woId, string resource, decimal cost, decimal hours)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                string sql = $"INSERT INTO [WO_LABOR] (WorkOrderId, Resource, Cost, Hours) " +
+                             $"VALUES (@WorkOrderId, @Resource, @Cost, @Hours)";
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.Add("@WorkOrderId", System.Data.SqlDbType.Int).Value = woId;
+                    cmd.Parameters.Add("@Resource", System.Data.SqlDbType.NVarChar).Value = resource;
+                    cmd.Parameters.Add("@Cost", System.Data.SqlDbType.Decimal).Value = cost;
+                    cmd.Parameters.Add("@Hours", System.Data.SqlDbType.Decimal).Value = hours;
+
+                    await cmd.ExecuteNonQueryAsync();
+                }
+            }
         }
     }
 }

@@ -16,6 +16,12 @@ export function WorkOrders() {
   const [userData, setUserData] = useState([]);
   const [preparedBy, setPreparedBy] = useState('');
   const [globalUser, setGlobalUser] = useState([]);
+  const [itemData, setItemData] = useState([]);
+  const [selectedItem, setSelectedItem] = useState({});
+  const [newMatrialData, setNewMaterialData] = useState([]);
+  const [newWoId, setNewWoId] = useState('');
+  const [newMaterialAmount, setNewMaterialAmount] = useState('');
+  const [editWorkOrderData, setEditWorkOrderData] = useState({});
 
   useEffect(() => {
     fetch(`workOrder`)
@@ -27,6 +33,12 @@ export function WorkOrders() {
     fetch(`user`)
       .then((result) => result.json())
       .then((data) => { console.log(data); setUserData(data)});
+  }, []);
+
+  useEffect(() => {
+    fetch(`inventory?showOOS=false&unique=true`)
+      .then((result) => result.json())
+      .then((data) => { console.log(data); setItemData(data)});
   }, []);
 
   useEffect(() => {
@@ -106,6 +118,89 @@ export function WorkOrders() {
   const handlePreparedBy = (e) => {
     setPreparedBy(e.target.value)
   }
+  const handleNewMaterialAmount = (e) => {
+    setNewMaterialAmount(e.target.value);
+  }
+
+  const handleSelectedItemChanged = (e) => {
+    var item = itemData.find((i) => `${i.description} (${i.units})` === e.target.value);
+    console.log(e.target.value, item);
+    setSelectedItem(item);
+  }
+
+  const addItemToMaterials = () => {
+    fetch(`workOrder/AddMaterial`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        "description" : selectedItem.description,
+        "units": selectedItem.units,
+        "woId" : newWoId,
+        "used" : newMaterialAmount,
+    })
+    })
+    .then(response => {
+      if(!response.ok){
+        if(response.status == 400){
+          console.log("validation error");
+        }
+      } else{
+        //TODO reload material table
+      }
+    })
+  }
+
+  const createWorkOrder = () => {
+    fetch(`workOrder`, {
+      method: 'PUT',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        "consumer" : "",
+        "preparedBy" : globalUser,
+        "description" : ""
+      })
+    })
+    .then(response=>response.json())
+    .then(data=>{ setNewWoId(data); toggle(); })
+  }
+
+  const editWorkOrder = () => {
+    fetch(`workOrder/${selectedItem}`)
+    .then((result) => result.json())
+    .then((data) => { setEditWorkOrderData(data)});
+  }
+
+  const saveWorkOrder = () => {
+    fetch(`workOrder`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        "id":newWoId,
+        "consumer":consumer,
+        "preparedBy":preparedBy,
+        "description":description,
+        "lastModifiedBy":globalUser
+    })
+    })
+    .then(response => {
+      if(!response.ok){
+        if(response.status == 400){
+          console.log("validation error");
+        }
+      } else{  
+        toggle()
+      }
+    })
+  }
 
   return (
     <>
@@ -130,7 +225,7 @@ export function WorkOrders() {
               Description:
             </Label>
             <Col sm={9}>
-              <Input id="description" name="description" placeholder='Item Description' type="textarea" value={description} onChange={handleDescription}
+              <Input id="description" name="description" placeholder='Description' type="textarea" value={description} onChange={handleDescription}
                     rows="2"/>
             </Col>
           </FormGroup>
@@ -163,12 +258,12 @@ export function WorkOrders() {
               <Col sm={5}>
               <Input
                 type="select"
-                name="preparedBy"
-                id="preparedBy"
-                onChange={handlePreparedBy}
+                name="addItemSelect"
+                id="addItemSelect"
+                onChange={handleSelectedItemChanged}
               >
-                {userData.map((user) =>
-                    <option value={user.name} key={user.id} selected={globalUser == user.name}>{user.name}</option>
+                {itemData.map((item) =>
+                    <option value={`${item.description} (${item.units})`} key={`${item.description} (${item.units})`} >{`${item.description} (${item.units})`}</option>
                   )
                 }
               </Input>
@@ -177,15 +272,15 @@ export function WorkOrders() {
               Amount:
             </Label>
             <Col sm={3}>
-              <Input id="amount" name="amount" type="number" />
+              <Input id="amount" name="amount" type="number" value={newMaterialAmount} onChange={handleNewMaterialAmount} />
             </Col>
             <Label sm={1}>
-              ft
+              {selectedItem.units}
             </Label>
             <Col sm={1}>
               <Button
                 color="primary"
-                onClick={toggle}
+                onClick={addItemToMaterials}
               >
                 Add
               </Button>
@@ -196,7 +291,7 @@ export function WorkOrders() {
         <Grid
           height="250px"
           onSelectionChanged={onSelectionChanged}
-          rowData={rowData}
+          rowData={newMatrialData}
           colDefs={materialColDefs}
         />
         <br/>
@@ -245,7 +340,7 @@ export function WorkOrders() {
 
       </ModalBody>
       <ModalFooter>
-        <Button color="primary">
+        <Button color="primary" onClick={saveWorkOrder}>
           Save
         </Button>{' '}
         <Button color="secondary" onClick={toggle}>
@@ -263,13 +358,14 @@ export function WorkOrders() {
         <Col>
         <Button
           color="primary"
-          onClick={toggle}
+          onClick={createWorkOrder}
         >
           New WO
         </Button>
         </Col>
         <Col>
         <Button
+          onClick={editWorkOrder}
           color="success"
         >
           Edit WO

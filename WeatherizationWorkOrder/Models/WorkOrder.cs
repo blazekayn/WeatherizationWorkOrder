@@ -12,5 +12,7 @@ namespace WeatherizationWorkOrder.Models
 		public DateTime PreparedDate { get; set; }
 		public string? LastModifiedBy { get; set; }
 		public DateTime? LastModified { get; set; }
+
+		public List<Material> Materials { get; set; }
 	}
 }

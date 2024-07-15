@@ -33,9 +33,9 @@ namespace WeatherizationWorkOrder.Controllers
         }
 
         [HttpPut]
-        public async Task Put([FromBody] WorkOrder workOrder)
+        public async Task<int> Put([FromBody] WorkOrder workOrder)
         {
-            await _workOrderProvider.CreateWorkOrder(workOrder);
+            return await _workOrderProvider.CreateWorkOrder(workOrder);
         }
 
         [HttpDelete("{id}")]
@@ -47,9 +47,10 @@ namespace WeatherizationWorkOrder.Controllers
         public async Task Update([FromBody] WorkOrder workOrder)
         {
             await _workOrderProvider.UpdateWorkOrder(workOrder);
-        }
+        }   
 
         [HttpPost]
+        [Route("AddMaterial")]
         public async Task AddMaterial([FromBody] AddMaterialRequest addMaterialRequest)
         {
             await _workOrderProvider.AddMaterialToWorkOrder(addMaterialRequest);
