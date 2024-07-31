@@ -1,0 +1,29 @@
+/* Provide sufficient contrast against white background */
+.print-div {
+  background-color: white;
+  color:black;
+  -webkit-print-color-adjust:exact !important;
+  print-color-adjust:exact !important;
+}
+
+td {
+  border: 1px solid black;
+}
+
+.align-right {
+  text-align: right;
+}
+
+.header {
+  font-weight: bold;
+  background-color: lightgray;
+}
+
+.footer {
+  font-weight: bold;
+  background-color: lightgray;
+}
+
+.even-row {
+  background-color: lightgray;
+}

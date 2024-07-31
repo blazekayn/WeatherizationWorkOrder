@@ -25,3 +25,11 @@ code {
   background-color: #1b6ec2;
   border-color: #1861ac;
 }
+
+@media print
+{    
+    .no-print, .no-print *
+    {
+        display: none !important;
+    }
+}

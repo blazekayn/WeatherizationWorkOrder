@@ -164,6 +164,10 @@ export function Items() {
     setItemUnits(value);
   }
 
+  const print = () => {
+    window.location = '/#/printitems';
+  }
+
   return (
     <>
     <Modal
@@ -179,7 +183,7 @@ export function Items() {
               Description:
             </Label>
             <Col sm={9}>
-              <Input id="description" name="description" placeholder='Item Description' type="textarea" value={description} onChange={handleDescription}
+              <Input id="description" name="description" placeholder='Item Description' type="textarea" value={description} onChange={handleDescription} maxLength={255}
                     rows="2"/>
             </Col>
           </FormGroup>
@@ -196,7 +200,7 @@ export function Items() {
               Unit Label:
             </Label>
             <Col sm={4}>
-              <Input id="unitLabel" name="unitLabel" type="text" value={itemUnits} onChange={handleUnits}/>
+              <Input id="unitLabel" name="unitLabel" type="text" value={itemUnits} onChange={handleUnits} maxLength={50}/>
             </Col>
             <Col sm={4}>
               <Input
@@ -240,16 +244,22 @@ export function Items() {
       </ModalFooter>
     </Modal>
     <Row>
-      <Col xs="10">
+      <Col xs="9">
         <h2>Inventory
         </h2>
       </Col>
-      <Col xs="2" style={{textAlign:"right"}}>
+      <Col xs="3" style={{textAlign:"right"}}>
         <Button
           color="primary"
           onClick={toggle}
         >
           Add Item
+        </Button>
+        <Button
+          color="secondary"
+          onClick={print}
+        >
+          Print
         </Button>
         </Col>
       </Row>

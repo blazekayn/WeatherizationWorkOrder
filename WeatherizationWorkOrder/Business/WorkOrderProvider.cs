@@ -53,17 +53,25 @@ namespace WeatherizationWorkOrder.Business
             await _workOrderDataProvider.AddLabor(request.WoId, request.Resource, request.Cost, request.Hours);
         }
 
-        public async Task AddMaterialToWorkOrder(AddMaterialRequest request)
+        public async Task<AddMaterialResponse> AddMaterialToWorkOrder(AddMaterialRequest request)
         {
             var remainingUnits = await _inventoryDataProvider.ReadByDesc(request.Description, request.Units);
             if(remainingUnits == null || !remainingUnits.Any())
             {
-                return;
+                return new AddMaterialResponse
+                {
+                    Success = false,
+                    Message = "None of this material in inventory."
+                };
             }
             var total = remainingUnits.Sum(item => item.Remaining);
             if(total < request.Used)
             {
-                return;
+                return new AddMaterialResponse
+                {
+                    Success = false,
+                    Message = $"Only {total} units of {request.Used} material in invetory."
+                };
             }
             List<UsedItem> itemsUsed = new List<UsedItem>();
             decimal runningTotal = 0;
@@ -104,12 +112,16 @@ namespace WeatherizationWorkOrder.Business
 
                     //add it to the return object to be displayed on the front end?
                 }
+                return new AddMaterialResponse
+                {
+                    Success = true,
+                };
             }
-            else
+            return new AddMaterialResponse
             {
-                //Show the user that they don't have enough
-
-            }
+                Success = false,
+                Message = "Something went wrong adding material to work order"
+            };
         }
 
     }

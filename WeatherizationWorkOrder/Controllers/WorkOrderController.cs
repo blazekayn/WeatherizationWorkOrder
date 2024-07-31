@@ -51,9 +51,16 @@ namespace WeatherizationWorkOrder.Controllers
 
         [HttpPost]
         [Route("AddMaterial")]
-        public async Task AddMaterial([FromBody] AddMaterialRequest addMaterialRequest)
+        public async Task<AddMaterialResponse> AddMaterial([FromBody] AddMaterialRequest addMaterialRequest)
         {
-            await _workOrderProvider.AddMaterialToWorkOrder(addMaterialRequest);
+            return await _workOrderProvider.AddMaterialToWorkOrder(addMaterialRequest);
+        }
+
+        [HttpPost]
+        [Route("AddLabor")]
+        public async Task AddLabor([FromBody] AddLaborRequest addLaborRequest)
+        {
+            await _workOrderProvider.AddLaborToWorkOrder(addLaborRequest);
         }
     }
 }
