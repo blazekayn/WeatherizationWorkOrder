@@ -17,6 +17,8 @@ export function Items() {
   const [units, setUnits] = useState([]);
   const [purchaseDate, setPurchaseDate] = useState([]);
   const [reload, setReload] = useState(false);
+  const [selectedRow, setSelectedRow] = useState();
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     fetch(`inventory?showOOS=${showOutOfStock}`)
@@ -103,20 +105,54 @@ export function Items() {
   }
 
   const createItem = () => {
+    if(editing){
+      updateItem();
+    }else{
+      fetch(`inventory`, {
+        method: 'PUT',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          description: description,
+          cost: costPer,
+          units: itemUnits,
+          startingAmount: startingAmount,
+          remaining: startingAmount,
+          purchaseDate: purchaseDate,
+          createdBy: localStorage.getItem("gUserName"),
+          lastModifiedBy: localStorage.getItem("gUserName")
+        })
+      })
+      .then(response => {
+        if(!response.ok){
+          if(response.status == 400){
+            console.log("validation error");
+          }
+        } else{   
+          toggle()
+        }
+      })
+    }
+  }
+
+  const updateItem = () => {
     fetch(`inventory`, {
-      method: 'PUT',
+      method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+        id: selectedRow.id,
         description: description,
         cost: costPer,
         units: itemUnits,
         startingAmount: startingAmount,
         remaining: startingAmount,
         purchaseDate: purchaseDate,
-        createdBy: localStorage.getItem("gUserName"),
+        createdBy: selectedRow.createdBy,
         lastModifiedBy: localStorage.getItem("gUserName")
       })
     })
@@ -125,7 +161,8 @@ export function Items() {
         if(response.status == 400){
           console.log("validation error");
         }
-      } else{   
+      } else{
+        setEditing(false);
         toggle()
       }
     })
@@ -168,6 +205,29 @@ export function Items() {
     window.location = '/#/printitems';
   }
 
+  const onSelectionChanged = (event) => {
+    if(event.api.getSelectedNodes().length > 0){
+      const data = event.api.getSelectedNodes()[0].data;
+      setSelectedRow(data);
+      console.log(data);
+      setCostPer(data.cost);
+      setDescription(data.description);
+      setStartingAmount(data.startingAmount);
+      setItemUnits(data.units);
+      setPurchaseDate(data.purchaseDate);
+      setModal(true);
+      setEditing(true);
+    }else{
+      setEditing(false);
+      setSelectedRow(null);
+      setCostPer("");
+      setDescription("");
+      setStartingAmount("");
+      setItemUnits("");
+      setPurchaseDate("");
+    }
+  }
+
   return (
     <>
     <Modal
@@ -175,7 +235,7 @@ export function Items() {
       isOpen={modal}
       toggle={toggle}
     >
-      <ModalHeader toggle={toggle}>Add Item</ModalHeader>
+      <ModalHeader toggle={toggle}>{editing ? "Edit Item" : "Add Item"}</ModalHeader>
       <ModalBody>
         <Form>
           <FormGroup row>
@@ -236,7 +296,7 @@ export function Items() {
       </ModalBody>
       <ModalFooter>
         <Button color="primary" onClick={createItem}>
-          Add Item
+          Save
         </Button>{' '}
         <Button color="secondary" onClick={toggle}>
           Cancel
@@ -287,6 +347,7 @@ export function Items() {
         <Grid
           rowData={rowData}
           colDefs={colDefs}
+          onSelectionChanged={onSelectionChanged}
         />
         : <></>}
       </div>

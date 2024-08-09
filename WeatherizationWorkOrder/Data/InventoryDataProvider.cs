@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Text.RegularExpressions;
 using WeatherizationWorkOrder.Models;
 
 namespace WeatherizationWorkOrder.Data
@@ -116,7 +117,7 @@ namespace WeatherizationWorkOrder.Data
             return items;
         }
 
-        public async Task<List<InventoryItem>> Read(bool showOutOfStock, bool unique)
+        public async Task<List<InventoryItem>> Read(bool showOutOfStock, bool unique, bool printed)
         {
             List<InventoryItem> items = new List<InventoryItem>();
 
@@ -126,19 +127,26 @@ namespace WeatherizationWorkOrder.Data
                 string sql = "";
                 if (unique)
                 {
-                    sql = "SELECT DISTINCT description, units FROM INVENTORY_ITEM ";
+                    sql = "SELECT description, units, SUM(remaining) as Remaining FROM INVENTORY_ITEM ";
                 }
                 else
-                {
+                { 
                     sql = $"SELECT * FROM INVENTORY_ITEM ";
                 }
                 if (!showOutOfStock)
                 {
                     sql += " WHERE Remaining > 0 ";
                 }
-                if (!unique)
+                if (!unique && !printed)
                 {
                     sql += "ORDER BY PurchaseDate desc";
+                }else if (printed)
+                {
+                    sql += " ORDER BY Description ASC, PurchaseDate DESC";
+                }
+                if (unique)
+                {
+                    sql += " GROUP BY Description, units ";
                 }
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
@@ -152,6 +160,7 @@ namespace WeatherizationWorkOrder.Data
                                 {
                                     Description = dr.GetString("Description"),
                                     Units = dr.GetString("Units"),
+                                    Remaining = dr.GetDecimal("Remaining"),
                                 };
                                 items.Add(item);
                             }
@@ -193,8 +202,6 @@ namespace WeatherizationWorkOrder.Data
                              $"Remaining=@Remaining, " +
                              $"PurchaseDate=@PurchaseDate, " +
                              $"LastModified=@LastModified, " +
-                             $"Created=@Created, " +
-                             $"CreatedBy=@CreatedBy, " +
                              $"LastModifiedBy=@LastModifiedBy " +
                              $"WHERE Id=@Id";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
@@ -206,8 +213,6 @@ namespace WeatherizationWorkOrder.Data
                     cmd.Parameters.Add("@Remaining", System.Data.SqlDbType.Decimal).Value = item.Remaining;
                     cmd.Parameters.Add("@PurchaseDate", System.Data.SqlDbType.DateTime).Value = item.PurchaseDate;
                     cmd.Parameters.Add("@LastModified", System.Data.SqlDbType.DateTime).Value = item.LastModified;
-                    cmd.Parameters.Add("@Created", System.Data.SqlDbType.DateTime).Value = item.Created;
-                    cmd.Parameters.Add("@CreatedBy", System.Data.SqlDbType.NVarChar).Value = item.CreatedBy;
                     cmd.Parameters.Add("@LastModifiedBy", System.Data.SqlDbType.NVarChar).Value = item.LastModifiedBy;
                     cmd.Parameters.Add("@Id", System.Data.SqlDbType.Int).Value = item.Id;
 

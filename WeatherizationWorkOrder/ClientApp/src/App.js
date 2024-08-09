@@ -4,6 +4,7 @@ import AppRoutes from './AppRoutes';
 import { Layout } from './components/Layout';
 import './custom.css';
 import {PrintItems} from './components/PrintItems';
+import {PrintWos} from './components/PrintWos';
 
 export default class App extends Component {
   static displayName = App.name;
@@ -22,6 +23,10 @@ export default class App extends Component {
           <Route
             path="/printitems"
             element={<PrintItems/>}
+          />
+          <Route
+            path="/printwos"
+            element={<PrintWos/>}
           />
           <Route
             path="*"

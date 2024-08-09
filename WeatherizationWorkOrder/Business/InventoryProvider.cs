@@ -26,9 +26,9 @@ namespace WeatherizationWorkOrder.Business
             await _inventoryDataProvider.Delete(id);
         }
 
-        public async Task<List<InventoryItem>> GetAllInventoryItems(bool showOutOfStock, bool unique)
+        public async Task<List<InventoryItem>> GetAllInventoryItems(bool showOutOfStock, bool unique, bool printed)
         {
-            return await _inventoryDataProvider.Read(showOutOfStock, unique);
+            return await _inventoryDataProvider.Read(showOutOfStock, unique, printed);
         }
 
         public async Task<InventoryItem> GetInventoryItemById(int id)
@@ -52,7 +52,7 @@ namespace WeatherizationWorkOrder.Business
         Task CreateInventoryItem(InventoryItem item);
         Task UpdateInventoryItem(InventoryItem item);
         Task<InventoryItem> GetInventoryItemById(int id);
-        Task<List<InventoryItem>> GetAllInventoryItems(bool showOutOfStock, bool unique);
+        Task<List<InventoryItem>> GetAllInventoryItems(bool showOutOfStock, bool unique, bool printed);
         Task DeleteInventoryItem(int id);
         Task<List<string>> GetUnits();
     }

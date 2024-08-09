@@ -1,12 +1,12 @@
 import React, { Component, useState, useEffect } from 'react';
 import '../print.css';
 
-export function PrintItems() {
+export function PrintWos() {
   const [rowData, setRowData] = useState([]);
  
   useEffect(() => {
-    fetch(`inventory?showOOS=false&printed=true`)
-      .then((result) => result.json())
+    fetch(`inventory?showOOS=false`)
+      .then((result) => result.json()) 
       .then((data) => { setRowData(data)});
   }, []);
 
