@@ -22,7 +22,7 @@ export function PrintItems() {
 
   return (
     <div className='print-div'>
-      <table>
+      <table className='print-table'>
         <tr className='header'>
           <td>
             Description

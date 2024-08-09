@@ -26,6 +26,13 @@ namespace WeatherizationWorkOrder.Controllers
             return await _workOrderProvider.GetAllWorkOrders();
         }
 
+        [HttpGet]
+        [Route("WorkOrderByDate")]
+        public async Task<List<WorkOrder>> GetByDate(DateTime from, DateTime to)
+        {
+            return await _workOrderProvider.GetAllWorkOrders(from, to);
+        }
+
         [HttpGet("{id}")]
         public async Task<WorkOrder> Get(int id)
         {
@@ -46,6 +53,7 @@ namespace WeatherizationWorkOrder.Controllers
         [HttpPost]
         public async Task Update([FromBody] WorkOrder workOrder)
         {
+            workOrder.LastModified = DateTime.Now;
             await _workOrderProvider.UpdateWorkOrder(workOrder);
         }   
 
@@ -58,9 +66,23 @@ namespace WeatherizationWorkOrder.Controllers
 
         [HttpPost]
         [Route("AddLabor")]
-        public async Task AddLabor([FromBody] AddLaborRequest addLaborRequest)
+        public async Task<List<Labor>> AddLabor([FromBody] AddLaborRequest addLaborRequest)
         {
-            await _workOrderProvider.AddLaborToWorkOrder(addLaborRequest);
+            return await _workOrderProvider.AddLaborToWorkOrder(addLaborRequest);
+        }
+
+        [HttpDelete]
+        [Route("materials/{materialId}")]
+        public async Task<List<Material>> DeleteMaterial(int materialId)
+        {
+            return await _workOrderProvider.DeleteMaterial(materialId);
+        }
+
+        [HttpDelete]
+        [Route("labor/{id}")]
+        public async Task<List<Labor>> DeleteLabor(int id)
+        {
+            return await _workOrderProvider.DeleteLabor(id);
         }
     }
 }

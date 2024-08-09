@@ -1,5 +1,9 @@
-﻿using WeatherizationWorkOrder.Data;
+﻿using Azure.Core;
+using Azure.Identity;
+using WeatherizationWorkOrder.Data;
 using WeatherizationWorkOrder.Models;
+using System.Linq;
+using Microsoft.Data.SqlClient;
 
 namespace WeatherizationWorkOrder.Business
 {
@@ -26,12 +30,58 @@ namespace WeatherizationWorkOrder.Business
 
         public async Task DeleteWorkOrder(int id)
         {
+            var material = await _workOrderDataProvider.ReadMaterials(id);
+            var labor = await _workOrderDataProvider.ReadLabors(id);
+            foreach (Material mat in material)
+            {
+                await _workOrderDataProvider.DeleteMaterial(mat.Id);
+            }
+            foreach(Labor lab in labor)
+            {
+                await _workOrderDataProvider.DeleteLabor(lab.Id);
+            }
             await _workOrderDataProvider.Delete(id);
         }
 
         public async Task<List<WorkOrder>> GetAllWorkOrders()
         {
-            return await _workOrderDataProvider.Read();
+            var wos = await _workOrderDataProvider.Read();
+            List<WorkOrder> returns = new List<WorkOrder>();
+            foreach (var workOrder in (List<WorkOrder>)wos)
+            {
+                returns.Add(await SetSubProperties(workOrder));
+            }
+            return returns;
+        }
+        public async Task<List<WorkOrder>> GetAllWorkOrders(DateTime from, DateTime to)
+        {
+            if (from == DateTime.MinValue)
+            {
+                from = DateTime.Parse("01/01/1970");
+            }
+            if (to == DateTime.MinValue)
+            {
+                to = DateTime.Now;
+            }
+            var wos = await _workOrderDataProvider.Read(from, to);
+            List<WorkOrder> returns = new List<WorkOrder>();
+            foreach (var workOrder in (List<WorkOrder>)wos)
+            {
+                returns.Add(await SetSubProperties(workOrder));
+            }
+            return returns;
+        }
+
+        private async Task<WorkOrder> SetSubProperties(WorkOrder workOrder)
+        {
+            var materials = await _workOrderDataProvider.ReadMaterials(workOrder.Id);
+            workOrder.Materials = materials;
+            var labor = await _workOrderDataProvider.ReadLabors(workOrder.Id);
+            workOrder.Labors = labor;
+            workOrder.MaterialCost = workOrder.Materials.Sum(item => item.Total);
+            workOrder.LaborCost = workOrder.Labors.Sum(item => item.Total);
+            workOrder.TotalCost = workOrder.MaterialCost + workOrder.LaborCost;
+            return workOrder;
         }
 
         public async Task<WorkOrder> GetWorkOrderByID(int id)
@@ -39,6 +89,8 @@ namespace WeatherizationWorkOrder.Business
             var wo = await _workOrderDataProvider.Read(id);
             var materials = await _workOrderDataProvider.ReadMaterials(id);
             wo.Materials = materials;
+            var labor = await _workOrderDataProvider.ReadLabors(id);
+            wo.Labors = labor;
             return wo;
         }
 
@@ -48,9 +100,31 @@ namespace WeatherizationWorkOrder.Business
             await _workOrderDataProvider.Update(workOrder);
         }
 
-        public async Task AddLaborToWorkOrder(AddLaborRequest request)
+        public async Task<List<Labor>> AddLaborToWorkOrder(AddLaborRequest request)
         {
             await _workOrderDataProvider.AddLabor(request.WoId, request.Resource, request.Cost, request.Hours);
+            return await _workOrderDataProvider.ReadLabors(request.WoId);
+        }
+
+        public async Task<List<Material>> DeleteMaterial(int materialId)
+        {
+            //Get the DB Item
+            var material = await _workOrderDataProvider.ReadMaterial(materialId);
+            var item = await _inventoryDataProvider.Read((int)material.InventoryItemId);
+            //Add to Inventory
+            item.Remaining += material.AmountUsed;
+            await _inventoryDataProvider.Update(item);
+            //Remove Item
+            await _workOrderDataProvider.DeleteMaterial(materialId);
+            //Return material list
+            return await _workOrderDataProvider.ReadMaterials((int)material.WorkOrderId); 
+        }
+
+        public async Task<List<Labor>> DeleteLabor(int id)
+        {
+            var labor = await _workOrderDataProvider.ReadLabor(id);
+            await _workOrderDataProvider.DeleteLabor(id);
+            return await _workOrderDataProvider.ReadLabors((int)((Labor)labor).WorkOrderId);
         }
 
         public async Task<AddMaterialResponse> AddMaterialToWorkOrder(AddMaterialRequest request)
@@ -115,6 +189,7 @@ namespace WeatherizationWorkOrder.Business
                 return new AddMaterialResponse
                 {
                     Success = true,
+                    Materials = await _workOrderDataProvider.ReadMaterials(request.WoId)
                 };
             }
             return new AddMaterialResponse

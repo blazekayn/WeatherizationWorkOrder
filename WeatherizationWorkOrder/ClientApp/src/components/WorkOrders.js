@@ -17,19 +17,30 @@ import {
 export function WorkOrders() {
   const [rowData, setRowData] = useState([]);
   const [modal, setModal] = useState(false);
+  const [printModal, setPrintModal] = useState(false);
   const [reload, setReload] = useState(false);
-  const [selectedRow, setSelectedRow] = useState();
   const [description, setDescription] = useState("");
   const [consumer, setConsumer] = useState("");
   const [userData, setUserData] = useState([]);
   const [preparedBy, setPreparedBy] = useState("");
   const [globalUser, setGlobalUser] = useState([]);
   const [itemData, setItemData] = useState([]);
-  const [selectedItem, setSelectedItem] = useState({});
+  const [selectedItem, setSelectedItem] = useState(-1);
   const [newMatrialData, setNewMaterialData] = useState([]);
   const [newWoId, setNewWoId] = useState("");
   const [newMaterialAmount, setNewMaterialAmount] = useState("");
-  const [editWorkOrderData, setEditWorkOrderData] = useState({});
+  const [materialCostTotal, setMaterialCostTotal] = useState("");
+  const [selectedMaterial, setSelectedMaterial] = useState(null);
+  const [laborCostTotal, setLaborCostTotal] = useState("");
+  const [laborData, setLaborData] = useState([]);
+  const [laborResource, setLaborResource] = useState("");
+  const [laborHours, setLaborHours] = useState("");
+  const [laborCost, setLaborCost] = useState("");
+  const [selectedLabor, setSelectedLabor] = useState(null);
+  const [workDate, setWorkDate] = useState(null);
+  const [selectedItemDDValue,setSelectedItemDDValue] = useState(-1);
+  const [printFromDate, setPrintFromDate] = useState("");
+  const [printToDate, setPrintToDate] = useState("");
 
   useEffect(() => {
     fetch(`workOrder`)
@@ -52,7 +63,6 @@ export function WorkOrders() {
     fetch(`inventory?showOOS=false&unique=true`)
       .then((result) => result.json())
       .then((data) => {
-        console.log(data);
         setItemData(data);
       });
   }, []);
@@ -67,7 +77,21 @@ export function WorkOrders() {
   const toggle = () => {
     setModal(!modal);
     setReload(!reload);
+    setSelectedMaterial(null);
   };
+
+  const togglePrint = () => {
+    setPrintModal(!printModal);
+  }
+
+  const formatter = new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  });
+
+  const moneyFormatter = (params) => {
+    return formatter.format(params.value);
+  }
 
   /* Format Date Cells */
   const dateFormatter = (params) => {
@@ -81,26 +105,59 @@ export function WorkOrders() {
   const materialColDefs = [
     {
       field: "description",
-      width: "100",
+      width: "400",
     },
     {
       field: "costPer",
-      width: "90",
+      width: "150",
+      valueFormatter: moneyFormatter,
+      type: 'rightAligned',
+    },
+    {
+      field: "units",
+      width: "150",
     },
     {
       field: "amountUsed",
-      width: "75",
+      width: "150",
+      type: 'rightAligned',
     },
     {
       field: "total",
-      width: "100",
+      width: "150",
+      valueFormatter: moneyFormatter,
+      type: 'rightAligned',
+    },
+  ];
+
+  const laborColDefs = [
+    {
+      field: "resource",
+      width: "400",
+    },
+    {
+      field: "cost",
+      width: "150",
+      valueFormatter: moneyFormatter,
+      type: 'rightAligned',
+    },
+    {
+      field: "hours",
+      width: "150",
+      type: 'rightAligned',
+    },
+    {
+      field: "total",
+      width: "150",
+      valueFormatter: moneyFormatter,
+      type: 'rightAligned',
     },
   ];
 
   const colDefs = [
     {
       field: "id",
-      width: 90,
+      width: 65,
     },
     {
       field: "consumer",
@@ -111,21 +168,64 @@ export function WorkOrders() {
       width: 200,
     },
     {
-      field: "description",
-      width: 360,
+      field: "workDate",
+      width: 150,
+      valueFormatter: dateFormatter,
     },
     {
       field: "preparedDate",
-      width: 175,
+      width: 150,
       valueFormatter: dateFormatter,
+    },
+    {
+      field: "materialCost",
+      width: 130,
+      valueFormatter: moneyFormatter,
+      type: 'rightAligned',
+    },
+    {
+      field: "laborCost",
+      width: 130,
+      valueFormatter: moneyFormatter,
+      type: 'rightAligned',
+    },
+    {
+      field: "totalCost",
+      width: 130,
+      valueFormatter: moneyFormatter,
+      type: 'rightAligned',
     },
   ];
 
+  const selectedMaterialChanged = (event) => {
+    if (event.api.getSelectedNodes().length > 0) {
+      const selected = event.api.getSelectedNodes()[0].data;
+      console.log(selected.id);
+      setSelectedMaterial(selected.id);
+    } else {
+      setSelectedMaterial(null);
+    }
+  }
+
+  
+  const selectedLaborChanged = (event) => {
+    if (event.api.getSelectedNodes().length > 0) {
+      const selected = event.api.getSelectedNodes()[0].data;
+      console.log(selected.id);
+      setSelectedLabor(selected.id);
+    } else {
+      setSelectedLabor(null);
+    }
+  }
+
   const onSelectionChanged = (event) => {
     if (event.api.getSelectedNodes().length > 0) {
-      setSelectedRow(event.api.getSelectedNodes()[0].data);
+      const newRow = event.api.getSelectedNodes()[0].data;
+      console.log(newRow.id);
+      editWorkOrder(newRow.id);
+      setModal(true);
     } else {
-      setSelectedRow(null);
+      setModal(false);
     }
   };
   const handleDescription = (e) => {
@@ -140,6 +240,43 @@ export function WorkOrders() {
   const handleNewMaterialAmount = (e) => {
     setNewMaterialAmount(e.target.value);
   };
+  const handleLaborResource = (e) => {
+    setLaborResource(e.target.value);
+  };
+  const handleLaborCost = (e) => {
+    setLaborCost(e.target.value);
+  };
+  const handleLaborHours = (e) => {
+    setLaborHours(e.target.value);
+  };
+  const handleWorkDate = (e) => {
+    setWorkDate(e.target.value);
+  }
+  const handleFromDate = (e) => {
+    setPrintFromDate(e.target.value);
+  }
+  const handleToDate = (e) => {
+    setPrintToDate(e.target.value);
+  }
+
+  const updateMaterials = (materials) => {
+    setNewMaterialData(materials);
+    setMaterialCostTotal(materials?.reduce((n, {total}) => n + total, 0));
+    setNewMaterialAmount("");
+    setSelectedItem(-1);
+    setSelectedItemDDValue(-1);
+
+    fetch(`inventory?showOOS=false&unique=true`)
+      .then((result) => result.json())
+      .then((data) => {
+        setItemData(data);
+      });
+  }
+
+  const updateLabor = (labor) => {
+    setLaborData(labor);
+    setLaborCostTotal(labor?.reduce((n, {total}) => n + total, 0));
+  }
 
   const handleSelectedItemChanged = (e) => {
     var item = itemData.find(
@@ -147,6 +284,7 @@ export function WorkOrders() {
     );
     console.log(e.target.value, item);
     setSelectedItem(item);
+    setSelectedItemDDValue(e.target.value);
   };
 
   const addItemToMaterials = () => {
@@ -162,18 +300,43 @@ export function WorkOrders() {
         woId: newWoId,
         used: newMaterialAmount,
       }),
-    }).then((response) => {
-      if (!response.ok) {
-        if (response.status == 400) {
-          console.log("validation error");
-        }
-      } else {
-        //TODO reload material table
-      }
+    }).then((response) => response.json())
+    .then((data) => {
+      console.log("in here", data);
+      updateMaterials(data.materials);
     });
   };
 
+  const addLabor = () => {
+    fetch(`workOrder/AddLabor`, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        woId: newWoId,
+        resource: laborResource,
+        cost: laborCost,
+        hours: laborHours,
+      }),
+    }).then((response) => response.json())
+    .then((data) => {
+      updateLabor(data);
+      setLaborResource("");
+      setLaborCost("");
+      setLaborHours("");
+    });
+  }
+
   const createWorkOrder = () => {
+    setConsumer('');
+    setDescription('');
+    setNewMaterialData([]);
+    setLaborData([]);
+    setWorkDate("");
+    setMaterialCostTotal("");
+    setLaborCostTotal("");
     fetch(`workOrder`, {
       method: "PUT",
       headers: {
@@ -189,15 +352,31 @@ export function WorkOrders() {
       .then((response) => response.json())
       .then((data) => {
         setNewWoId(data);
+        setPreparedBy(globalUser);
         toggle();
       });
   };
 
-  const editWorkOrder = () => {
-    fetch(`workOrder/${selectedItem}`)
+  const editWorkOrder = (id) => {
+    if(id === null) return;
+    setNewWoId(id);
+    fetch(`workOrder/${id}`)
       .then((result) => result.json())
       .then((data) => {
-        setEditWorkOrderData(data);
+        console.log(data);
+        setConsumer(data.consumer);
+        setDescription(data.description);
+        setPreparedBy(data.preparedBy);
+        updateMaterials(data.materials);
+        updateLabor(data.labors);
+        var date = new Date(data.workDate);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed, so add 1
+        const day = String(date.getDate()).padStart(2, '0');
+
+        // Format as YYYY-MM-DD
+        const formattedDate = `${year}-${month}-${day}`;
+        setWorkDate(formattedDate);
       });
   };
 
@@ -226,14 +405,102 @@ export function WorkOrders() {
     });
   };
 
+  const deleteWorkOrder = () => {
+    const doit = window.confirm("Are you sure you want to Delete this Work Order? It cannot be restored.");
+    if(doit){
+      fetch(`workOrder/${newWoId}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }).then((response) => {
+        if (!response.ok) {
+          if (response.status == 400) {
+            console.log("validation error");
+          }
+        } else {
+          toggle();
+        }
+      })
+    }
+  }
+
+  const deleteMaterial = () => {
+    const doit = window.confirm("Are you sure you want to Delete? It cannot be restored. Materials will be re-added to inventory.");
+    if(doit && selectedMaterial){
+      fetch(`workOrder/materials/${selectedMaterial}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }).then((response) => response.json())
+      .then((data) => {
+        updateMaterials(data);
+      });
+    }
+  }
+
+  const deleteLabor = () => {
+    const doit = window.confirm("Are you sure you want to Delete?");
+    if(doit && selectedLabor){
+      fetch(`workOrder/labor/${selectedLabor}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+      }).then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        updateLabor(data);
+      });
+    }
+  }
+
+  const print = () => {
+    window.location = `/#/printwos?from=${encodeURIComponent(printFromDate)}&to=${encodeURIComponent(printToDate)}`;
+  }
+
   return (
     <>
+      <Modal size="md" isOpen={printModal} toggle={togglePrint}>
+        <ModalBody>
+          <Form>
+          <FormGroup row>
+              <Label for="fromDate" sm={4}>
+                From Date:
+              </Label>
+              <Col sm={6}>
+                <Input id="fromDate" name="fromDate" type="date" value={printFromDate} onChange={handleFromDate}/>
+              </Col>
+            </FormGroup>
+            <FormGroup row>
+              <Label for="toDate" sm={4}>
+                To Date:
+              </Label>
+              <Col sm={6}>
+                <Input id="toDate" name="toDate" type="date" value={printToDate} onChange={handleToDate}/>
+              </Col>
+            </FormGroup>
+          </Form>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="primary" onClick={print}>
+            Print
+          </Button>{" "}
+          <Button color="secondary" onClick={togglePrint}>
+            Cancel
+          </Button>
+        </ModalFooter>
+      </Modal>
       <Modal size="xl" isOpen={modal} toggle={toggle}>
-        <ModalHeader toggle={toggle}>New Work Order</ModalHeader>
+        <ModalHeader toggle={toggle}>Work Order {newWoId}</ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup row>
-              <Label for="consumer" sm={3}>
+              <Label for="consumer" sm={2}>
                 Consumer:
               </Label>
               <Col sm={4}>
@@ -247,10 +514,41 @@ export function WorkOrders() {
               </Col>
             </FormGroup>
             <FormGroup row>
-              <Label for="description" sm={3}>
+              <Label for="date" sm={2}>
+                Work Date:
+              </Label>
+              <Col sm={4}>
+                <Input id="date" name="date" type="date" value={workDate} onChange={handleWorkDate}/>
+              </Col>
+            </FormGroup>
+            <FormGroup row>
+              <Label for="preparedBy" sm={2}>
+                Prepared By:
+              </Label>
+              <Col sm={4}>
+                <Input
+                  type="select"
+                  name="preparedBy"
+                  id="preparedBy"
+                  onChange={handlePreparedBy}
+                >
+                  {userData.map((user) => (
+                    <option
+                      value={user.name}
+                      key={user.id}
+                      selected={preparedBy ? preparedBy == user.name : globalUser == user.name}
+                    >
+                      {user.name}
+                    </option>
+                  ))}
+                </Input>
+              </Col>
+            </FormGroup>
+            <FormGroup row>
+              <Label for="description" sm={2}>
                 Description:
               </Label>
-              <Col sm={9}>
+              <Col sm={10}>
                 <Input
                   id="description"
                   name="description"
@@ -262,30 +560,8 @@ export function WorkOrders() {
                 />
               </Col>
             </FormGroup>
-            <FormGroup row>
-              <Label for="preparedBy" sm={3}>
-                Prepared By:
-              </Label>
-              <Col sm={9}>
-                <Input
-                  type="select"
-                  name="preparedBy"
-                  id="preparedBy"
-                  onChange={handlePreparedBy}
-                >
-                  {userData.map((user) => (
-                    <option
-                      value={user.name}
-                      key={user.id}
-                      selected={globalUser == user.name}
-                    >
-                      {user.name}
-                    </option>
-                  ))}
-                </Input>
-              </Col>
-            </FormGroup>
           </Form>
+          <hr/>
           <h3>Materials</h3>
           <Row>
             <Form>
@@ -293,13 +569,15 @@ export function WorkOrders() {
                 <Label for="consumer" sm={1}>
                   Item:
                 </Label>
-                <Col sm={5}>
+                <Col sm={4}>
                   <Input
                     type="select"
                     name="addItemSelect"
                     id="addItemSelect"
                     onChange={handleSelectedItemChanged}
+                    value={selectedItemDDValue}
                   >
+                    <option disabled selected value={-1}> -- select an material -- </option>
                     {itemData.map((item) => (
                       <option
                         value={`${item.description} (${item.units})`}
@@ -307,9 +585,6 @@ export function WorkOrders() {
                       >{`${item.description} (${item.units})`}</option>
                     ))}
                   </Input>
-                </Col>
-                <Col>
-                    {selectedItem.remaining}
                 </Col>
                 <Label for="amount" sm={1}>
                   Amount:
@@ -323,7 +598,7 @@ export function WorkOrders() {
                     onChange={handleNewMaterialAmount}
                   />
                 </Col>
-                <Label sm={1}>{selectedItem.units}</Label>
+                <Label sm={2}>{selectedItem && selectedItem != -1 ? selectedItem.units + " / " + selectedItem.remaining : ""}</Label>
                 <Col sm={1}>
                   <Button color="primary" onClick={addItemToMaterials}>
                     Add
@@ -334,47 +609,98 @@ export function WorkOrders() {
           </Row>
           <Grid
             height="250px"
-            onSelectionChanged={onSelectionChanged}
             rowData={newMatrialData}
             colDefs={materialColDefs}
+            onSelectionChanged={selectedMaterialChanged}
           />
           <br />
+          <Row>
+            <Col sm={2} style={{fontWeight:"bold"}}>
+            Materials Total:
+            </Col>
+            <Col sm={9}>
+             {materialCostTotal ? formatter.format(materialCostTotal) : ""}
+            </Col>
+              <Col sm={1}><Button color="danger" onClick={deleteMaterial}>
+                Delete
+              </Button>
+            </Col>
+          </Row>
+          <hr/>
           <h3>Labor</h3>
           <Row>
             <Form>
               <FormGroup row>
-                <Label for="consumer" sm={1}>
+                <Label for="resource" sm={1}>
                   Resource:
                 </Label>
                 <Col sm={3}>
-                  <Input type="text"></Input>
+                  <Input type="text" name="resource" id="resource" value={laborResource} onChange={handleLaborResource}></Input>
                 </Col>
                 <Label for="cost" sm={1}>
                   Cost:
                 </Label>
                 <Col sm={2}>
-                  <Input id="cost" name="cost" type="number" />
+                  <Input id="cost" name="cost" type="number" value={laborCost} onChange={handleLaborCost} />
                 </Col>
                 <Label for="hours" sm={1}>
                   Hours:
                 </Label>
                 <Col sm={2}>
-                  <Input id="hours" name="hours" type="number" />
+                  <Input id="hours" name="hours" type="number" value={laborHours} onChange={handleLaborHours} />
                 </Col>
                 <Col sm={1}>
-                  <Button color="primary" onClick={toggle}>
+                  <Button color="primary" onClick={addLabor}>
                     Add
-                  </Button>
+                  </Button>{" "}
                 </Col>
               </FormGroup>
             </Form>
           </Row>
           <Grid
             height="250px"
-            onSelectionChanged={onSelectionChanged}
-            rowData={rowData}
-            colDefs={materialColDefs}
+            rowData={laborData}
+            colDefs={laborColDefs}
+            onSelectionChanged={selectedLaborChanged}
           />
+          <br/>
+          <Row>
+            <Col sm={2} style={{fontWeight:"bold"}}>
+            Labor Total:
+            </Col>
+            <Col sm={9}>
+             {laborCostTotal ? formatter.format(laborCostTotal) : ""}
+            </Col>
+              <Col sm={1}><Button color="danger" onClick={deleteLabor}>
+                Delete
+              </Button>
+            </Col>
+          </Row>
+          <hr/>
+          <Row>
+            <Col sm={9} style={{fontWeight:"bold"}}>
+            Labor Total:
+            </Col>
+            <Col sm={2}>
+             {laborCostTotal ? formatter.format(laborCostTotal) : ""}
+            </Col>
+          </Row>
+          <Row>
+            <Col sm={9} style={{fontWeight:"bold"}}>
+            Materials Total:
+            </Col>
+            <Col sm={2}>
+             {materialCostTotal ? formatter.format(materialCostTotal) : ""}
+            </Col>
+          </Row>
+          <Row>
+            <Col sm={9} style={{fontWeight:"bold"}}>
+            Total:
+            </Col>
+            <Col sm={2} style={{fontWeight:"bold"}}>
+             {formatter.format((materialCostTotal ? materialCostTotal : 0) + (laborCostTotal ? laborCostTotal : 0))}
+            </Col>
+          </Row>
         </ModalBody>
         <ModalFooter>
           <Button color="primary" onClick={saveWorkOrder}>
@@ -382,29 +708,26 @@ export function WorkOrders() {
           </Button>{" "}
           <Button color="secondary" onClick={toggle}>
             Cancel
+          </Button>{" "}
+          <Button color="danger" onClick={deleteWorkOrder}>
+            Delete
           </Button>
         </ModalFooter>
       </Modal>
       <Row>
-        <Col xs="8">
+        <Col xs="9">
           <h2>Work Orders</h2>
         </Col>
-        <Col xs="4" style={{ textAlign: "right" }}>
-          <Row>
-            <Col>
+        <Col xs="3" style={{ textAlign: "right" }}>
               <Button color="primary" onClick={createWorkOrder}>
-                New WO
+                New Work Order
+              </Button> {" "}
+              <Button
+                color="secondary"
+                onClick={togglePrint}
+              >
+                Print
               </Button>
-            </Col>
-            <Col>
-              <Button onClick={editWorkOrder} color="success">
-                Edit WO
-              </Button>
-            </Col>
-            <Col>
-              <Button color="danger">Delete WO</Button>
-            </Col>
-          </Row>
         </Col>
       </Row>
       <div

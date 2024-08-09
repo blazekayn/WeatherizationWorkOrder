@@ -35,6 +35,7 @@ CREATE TABLE [dbo].[WORK_ORDER](
 	[PreparedBy] [nvarchar](255) NULL,
 	[Description] [nvarchar](max) NULL,
 	[PreparedDate] [datetime] NULL,
+	[WorkDate] [datetime] NULL,
 	[LastModifiedBy] [nvarchar](255) NULL,
 	[LastModified] [datetime] NULL,
  CONSTRAINT [PK_WORK_ORDER] PRIMARY KEY CLUSTERED 

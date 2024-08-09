@@ -1,9 +1,14 @@
 /* Provide sufficient contrast against white background */
 .print-div {
+  width:100%;
   background-color: white;
   color:black;
   -webkit-print-color-adjust:exact !important;
   print-color-adjust:exact !important;
+}
+
+.print-table {
+  width:100%;
 }
 
 td {

@@ -61,6 +61,7 @@ export function Items() {
       headerName: "Cost Each",
       field: "cost",
       width: 125,
+      type: 'rightAligned',
       valueFormatter: (params) => {
         const formatter = new Intl.NumberFormat('en-US', {
           style: 'currency',
@@ -73,16 +74,19 @@ export function Items() {
     {
       field: "units",
       width: 175,
+      type: 'rightAligned',
     },
     {
       headerName: "Starting Each",
       field: "startingAmount",
       width: 175,
+      type: 'rightAligned',
     },
     {
       headerName: "Remaining Each",
       field: "remaining",
       width: 175,
+      type: 'rightAligned',
     },
     {
       field: "purchaseDate",
@@ -214,7 +218,14 @@ export function Items() {
       setDescription(data.description);
       setStartingAmount(data.startingAmount);
       setItemUnits(data.units);
-      setPurchaseDate(data.purchaseDate);
+      var date = new Date(data.purchaseDate);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed, so add 1
+      const day = String(date.getDate()).padStart(2, '0');
+
+      // Format as YYYY-MM-DD
+      const formattedDate = `${year}-${month}-${day}`;
+      setPurchaseDate(formattedDate);
       setModal(true);
       setEditing(true);
     }else{
@@ -314,7 +325,7 @@ export function Items() {
           onClick={toggle}
         >
           Add Item
-        </Button>
+        </Button>{" "}
         <Button
           color="secondary"
           onClick={print}

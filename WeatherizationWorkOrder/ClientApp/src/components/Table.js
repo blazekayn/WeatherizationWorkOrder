@@ -17,7 +17,7 @@ export function Grid(props) {
   // Apply settings across all columns
   const defaultColDef = useMemo(() => ({
     filter: true,
-    editable: true,
+    editable: false,
     resizable: true,
   }));
   
@@ -36,9 +36,6 @@ export function Grid(props) {
         onSelectionChanged={props.onSelectionChanged}
         pagination={true}
         rowSelection="single"
-        onCellValueChanged={(event) =>
-          console.log(`New Cell Value: ${event.value}`)
-        }
       />
     </div>
   );

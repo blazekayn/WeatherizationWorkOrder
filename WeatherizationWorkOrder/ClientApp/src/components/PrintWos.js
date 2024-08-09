@@ -1,11 +1,13 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import '../print.css';
 
 export function PrintWos() {
   const [rowData, setRowData] = useState([]);
- 
+  const [searchParams, setSearchParams] = useSearchParams();
+
   useEffect(() => {
-    fetch(`inventory?showOOS=false`)
+    fetch(`workOrder/workOrderByDate?from=${searchParams.get("from")}&to=${searchParams.get("to")}`)
       .then((result) => result.json()) 
       .then((data) => { setRowData(data)});
   }, []);
@@ -21,53 +23,60 @@ export function PrintWos() {
   };
 
   return (
+    (rowData?.length > 0 ? 
     <div className='print-div'>
-      <table>
+      <table className='print-table'>
         <tr className='header'>
           <td>
-            Description
+            Id
           </td>
           <td>
-            Starting Amount
+            Consumer
           </td>
           <td>
-            Current Amount
+            Prepared By
           </td>
           <td>
-            Units
+            Work Date
           </td>
           <td>
-            Purchase Date
+            Prepared Date
           </td>
           <td>
-            Cost per Unit
+            Material Cost
           </td>
           <td>
-            Remaining $ Value
+            Labor Cost
+          </td>
+          <td>
+            Total Cost
           </td>
         </tr>
         {rowData.map((item, index) => (
           <tr className={index%2==1 ? 'even-row' : ''}>
             <td>
-              {item.description}
-            </td>
-            <td className='align-right'>
-              {item.startingAmount}
-            </td>
-            <td className='align-right'>
-              {item.remaining}
+              {item.id}
             </td>
             <td>
-              {item.units}
+              {item.consumer}
             </td>
             <td>
-              {dateFormatter(item.purchaseDate)}
+              {item.preparedBy}
+            </td>
+            <td>
+              {dateFormatter(item.workDate)}
+            </td>
+            <td>
+              {dateFormatter(item.preparedDate)}
             </td>
             <td className='align-right'>
-              {formatter.format(item.cost)}
+              {formatter.format(item.materialCost)}
             </td>
             <td className='align-right'>
-              {formatter.format(item.cost * item.remaining)}
+              {formatter.format(item.laborCost)}
+            </td>
+            <td className='align-right'>
+              {formatter.format(item.totalCost)}
             </td>
           </tr>
         ))}
@@ -75,15 +84,15 @@ export function PrintWos() {
           <td>
             Totals:
           </td>
-          <td colSpan={5}>
+          <td colSpan={6}>
 
           </td>
           <td className='align-right'>
-            {formatter.format(rowData.reduce((n, {cost, remaining}) => n + (cost * remaining), 0))}
+            {formatter.format(rowData.reduce((n, {totalCost}) => n + totalCost, 0))}
           </td>
         </tr>
       </table>
     </div>
+    : <></>)
   );
-
 }
