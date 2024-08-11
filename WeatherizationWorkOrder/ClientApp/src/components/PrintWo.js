@@ -37,21 +37,48 @@ export function PrintWo() {
     (rowData ? 
     <div className='print-div'>
       <h2>Work Order - {rowData.id}</h2>
-      <div>
-        Consumer: {rowData.consumer}
-      </div>
-      <div>
-        Work Date: {rowData.workDate}
-      </div>
-      <div>
-        Prepared By: {rowData.preparedBy}
-      </div>
-      <div>
-        Prepared Date: {rowData.preparedDate}
-      </div>
-      <div>
-        Description: {rowData.description}
-      </div>
+      <table className='print-table'>
+        <tr>
+          <td style={{width:"150px", fontWeight:"bold"}}>
+            Consumer
+          </td>
+          <td>
+            {rowData.consumer}
+          </td>
+        </tr>
+        <tr>
+          <td style={{width:"150px", fontWeight:"bold"}}>
+            Work Date
+          </td>
+          <td>
+          {rowData.workDate}
+          </td>
+        </tr>
+        <tr>
+          <td style={{width:"150px", fontWeight:"bold"}}>
+          Prepared By
+          </td>
+          <td>
+          {rowData.preparedBy}
+          </td>
+        </tr>
+        <tr>
+          <td style={{width:"150px", fontWeight:"bold"}}>
+          Prepared Date
+          </td>
+          <td>
+          {rowData.preparedDate}
+          </td>
+        </tr>
+        <tr>
+          <td style={{width:"150px", fontWeight:"bold"}}>
+          Description
+          </td>
+          <td>
+          {rowData.description}
+          </td>
+        </tr>
+      </table>
       <br/>
       <div>
         <h3>Materials</h3>
