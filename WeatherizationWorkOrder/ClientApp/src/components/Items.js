@@ -356,6 +356,7 @@ export function Items() {
       >
         {rowData?.length > 0 ?
         <Grid
+            height="750px"
           rowData={rowData}
           colDefs={colDefs}
           onSelectionChanged={onSelectionChanged}

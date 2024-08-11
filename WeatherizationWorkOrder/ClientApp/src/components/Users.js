@@ -175,7 +175,7 @@ export function Users() {
           onClick={editUserModal}
         >
           Edit User
-        </Button>
+        </Button>{' '}
         <Button
           color="danger"
           onClick={deleteUser}

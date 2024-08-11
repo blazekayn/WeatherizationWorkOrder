@@ -10,7 +10,7 @@ export class Layout extends Component {
     return (
       <div>
         <NavMenu />
-        <Container tag="main">
+        <Container tag="main" style={{marginTop:"5px"}}>
           <Outlet></Outlet>
         </Container>
       </div>

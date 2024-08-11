@@ -5,6 +5,7 @@ import { Layout } from './components/Layout';
 import './custom.css';
 import {PrintItems} from './components/PrintItems';
 import {PrintWos} from './components/PrintWos';
+import {PrintWo} from './components/PrintWo';
 
 export default class App extends Component {
   static displayName = App.name;
@@ -29,8 +30,12 @@ export default class App extends Component {
             element={<PrintWos/>}
           />
           <Route
+            path="/printwo"
+            element={<PrintWo/>}
+          />
+          <Route
             path="*"
-            element={<Navigate to="/items" replace={true} />}
+            element={<Navigate to="/work-order" replace={true} />}
           />
         </Routes>
     );

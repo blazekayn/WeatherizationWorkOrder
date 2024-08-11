@@ -102,6 +102,10 @@ export function WorkOrders() {
     });
   };
 
+  const numberFormatter = (params) => {
+    return params.value.toFixed(2);
+  }
+
   const materialColDefs = [
     {
       field: "description",
@@ -121,6 +125,7 @@ export function WorkOrders() {
       field: "amountUsed",
       width: "150",
       type: 'rightAligned',
+      valueFormatter: numberFormatter,
     },
     {
       field: "total",
@@ -145,6 +150,7 @@ export function WorkOrders() {
       field: "hours",
       width: "150",
       type: 'rightAligned',
+      valueFormatter: numberFormatter,
     },
     {
       field: "total",
@@ -463,6 +469,10 @@ export function WorkOrders() {
     window.location = `/#/printwos?from=${encodeURIComponent(printFromDate)}&to=${encodeURIComponent(printToDate)}`;
   }
 
+  const printWo = () => {
+    window.location = `/#/printwo?id=${newWoId}`;
+  }
+
   return (
     <>
       <Modal size="md" isOpen={printModal} toggle={togglePrint}>
@@ -496,7 +506,22 @@ export function WorkOrders() {
         </ModalFooter>
       </Modal>
       <Modal size="xl" isOpen={modal} toggle={toggle}>
-        <ModalHeader toggle={toggle}>Work Order {newWoId}</ModalHeader>
+        <ModalHeader toggle={toggle}>
+          <Row>
+            <Col xs="10">
+              Work Order - {newWoId}
+            </Col>
+            <Col xs="2">
+            <Button
+                color="primary"
+                onClick={printWo}
+              >
+                Print
+              </Button>
+            </Col>
+          </Row>
+
+        </ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup row>
@@ -679,25 +704,25 @@ export function WorkOrders() {
           <hr/>
           <Row>
             <Col sm={9} style={{fontWeight:"bold"}}>
-            Labor Total:
+            Materials Total:
             </Col>
-            <Col sm={2}>
-             {laborCostTotal ? formatter.format(laborCostTotal) : ""}
+            <Col sm={2} style={{textAlign:"right"}}>
+             {materialCostTotal ? formatter.format(materialCostTotal) : ""}
             </Col>
           </Row>
           <Row>
             <Col sm={9} style={{fontWeight:"bold"}}>
-            Materials Total:
+            Labor Total:
             </Col>
-            <Col sm={2}>
-             {materialCostTotal ? formatter.format(materialCostTotal) : ""}
+            <Col sm={2} style={{textAlign:"right"}}>
+             {laborCostTotal ? formatter.format(laborCostTotal) : ""}
             </Col>
           </Row>
           <Row>
             <Col sm={9} style={{fontWeight:"bold"}}>
             Total:
             </Col>
-            <Col sm={2} style={{fontWeight:"bold"}}>
+            <Col sm={2} style={{fontWeight:"bold", textAlign:"right"}}>
              {formatter.format((materialCostTotal ? materialCostTotal : 0) + (laborCostTotal ? laborCostTotal : 0))}
             </Col>
           </Row>
@@ -736,6 +761,7 @@ export function WorkOrders() {
       >
         {rowData?.length > 0 ? (
           <Grid
+            height="750px"
             onSelectionChanged={onSelectionChanged}
             rowData={rowData}
             colDefs={colDefs}

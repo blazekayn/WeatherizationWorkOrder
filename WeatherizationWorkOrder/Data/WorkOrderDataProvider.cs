@@ -79,7 +79,7 @@ namespace WeatherizationWorkOrder.Data
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string sql = $"SELECT * FROM WORK_ORDER ORDER BY WorkDate DESC";
+                string sql = $"SELECT * FROM WORK_ORDER ORDER BY ID DESC";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     using (SqlDataReader dr = cmd.ExecuteReader())
