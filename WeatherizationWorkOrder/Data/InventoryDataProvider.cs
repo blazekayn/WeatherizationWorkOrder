@@ -86,7 +86,7 @@ namespace WeatherizationWorkOrder.Data
                 conn.Open();
                 string sql = $"SELECT * FROM INVENTORY_ITEM WHERE UPPER(Description) = UPPER(@Description) AND UPPER(Units) = UPPER(@Units)";
                 sql += "AND Remaining > 0 ";
-                sql += "ORDER BY PurchaseDate desc";
+                sql += "ORDER BY PurchaseDate asc";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.Add("@Description", System.Data.SqlDbType.NVarChar).Value = desc;
@@ -139,10 +139,10 @@ namespace WeatherizationWorkOrder.Data
                 }
                 if (!unique && !printed)
                 {
-                    sql += "ORDER BY PurchaseDate desc";
+                    sql += "ORDER BY Description ASC, PurchaseDate ASC";
                 }else if (printed)
                 {
-                    sql += " ORDER BY Description ASC, PurchaseDate DESC";
+                    sql += " ORDER BY Description ASC, PurchaseDate ASC";
                 }
                 if (unique)
                 {

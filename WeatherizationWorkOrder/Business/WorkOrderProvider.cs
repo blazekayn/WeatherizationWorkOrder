@@ -151,13 +151,13 @@ namespace WeatherizationWorkOrder.Business
             decimal runningTotal = 0;
             foreach (var item in remainingUnits)
             {
-                if (item.Remaining >= request.Used)
+                if (item.Remaining >= (request.Used - runningTotal))
                 {
-                    item.Remaining -= request.Used;
+                    item.Remaining -= (request.Used - runningTotal);
                     itemsUsed.Add(new UsedItem
                     {
                         InventoryItem = item,
-                        amount = request.Used
+                        amount = (request.Used - runningTotal)
                     });
                     runningTotal = request.Used;
                     break;
@@ -165,12 +165,12 @@ namespace WeatherizationWorkOrder.Business
                 else
                 {
                     runningTotal += item.Remaining;
-                    item.Remaining = 0;
                     itemsUsed.Add(new UsedItem
                     {
                         InventoryItem = item,
                         amount = item.Remaining
                     });
+                    item.Remaining = 0;
                 }
             }
             if (runningTotal == request.Used)

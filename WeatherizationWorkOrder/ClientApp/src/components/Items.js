@@ -13,6 +13,7 @@ export function Items() {
   const [costPer, setCostPer] = useState('');
   const [description, setDescription] = useState('');
   const [startingAmount, setStartingAmount] = useState('');
+  const [remainingAmount, setRemainingAmount] = useState('');
   const [itemUnits, setItemUnits] = useState('');
   const [units, setUnits] = useState([]);
   const [purchaseDate, setPurchaseDate] = useState([]);
@@ -37,6 +38,7 @@ export function Items() {
     setCostPer("");
     setDescription("");
     setStartingAmount("");
+    setRemainingAmount("");
     setItemUnits("");
     setPurchaseDate("");
     setReload(!reload);
@@ -154,7 +156,7 @@ export function Items() {
         cost: costPer,
         units: itemUnits,
         startingAmount: startingAmount,
-        remaining: startingAmount,
+        remaining: remainingAmount,
         purchaseDate: purchaseDate,
         createdBy: selectedRow.createdBy,
         lastModifiedBy: localStorage.getItem("gUserName")
@@ -196,6 +198,10 @@ export function Items() {
     setStartingAmount(e.target.value);
   }
 
+  const handleRemainingAmount = (e) => {
+    setRemainingAmount(e.target.value);
+  }
+
   const handlePurchaseDate = (e) => {
     setPurchaseDate(e.target.value);
   }
@@ -217,6 +223,7 @@ export function Items() {
       setCostPer(data.cost);
       setDescription(data.description);
       setStartingAmount(data.startingAmount);
+      setRemainingAmount(data.remaining);
       setItemUnits(data.units);
       var date = new Date(data.purchaseDate);
       const year = date.getFullYear();
@@ -234,6 +241,7 @@ export function Items() {
       setCostPer("");
       setDescription("");
       setStartingAmount("");
+      setRemainingAmount("");
       setItemUnits("");
       setPurchaseDate("");
     }
@@ -295,6 +303,15 @@ export function Items() {
               <Input id="amount" name="amount" type="number" value={startingAmount} onChange={handleStartingAmount}/>
             </Col>
           </FormGroup>
+          {editing ? 
+          <FormGroup row>
+            <Label for="remaining" sm={3}>
+              Remaining Amount:
+            </Label>
+            <Col sm={3}>
+              <Input id="remaining" name="remaining" type="number" value={remainingAmount} onChange={handleRemainingAmount}/>
+            </Col>
+          </FormGroup> : <></>}
           <FormGroup row>
             <Label for="date" sm={3}>
               Purchase Date:

@@ -303,6 +303,7 @@ namespace WeatherizationWorkOrder.Data
                 string sql = $"UPDATE [WORK_ORDER] SET " +
                              $"Consumer=@Consumer, " +
                              $"PreparedBy=@PreparedBy, " +
+                             $"WorkDate=@WorkDate, " +
                              $"Description=@Description, " +
                              $"LastModifiedBy=@LastModifiedBy, " +
                              $"LastModified=@LastModified " +
@@ -312,6 +313,7 @@ namespace WeatherizationWorkOrder.Data
                     cmd.Parameters.Add("@Id", SqlDbType.Int).Value = workOrder.Id;
                     cmd.Parameters.Add("@Consumer", SqlDbType.NVarChar).Value = workOrder.Consumer;
                     cmd.Parameters.Add("@PreparedBy", SqlDbType.NVarChar).Value = workOrder.PreparedBy;
+                    cmd.Parameters.Add("@WorkDate", SqlDbType.DateTime).Value = workOrder.WorkDate is null ? DBNull.Value : workOrder.WorkDate;
                     cmd.Parameters.Add("@Description", SqlDbType.NVarChar).Value = workOrder.Description;
                     cmd.Parameters.Add("@LastModifiedBy", SqlDbType.NVarChar).Value = workOrder.LastModifiedBy;
                     cmd.Parameters.Add("@LastModified", SqlDbType.DateTime).Value = workOrder.LastModified;

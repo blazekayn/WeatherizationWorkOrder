@@ -13,13 +13,15 @@ export function PrintWo() {
     fetch(`workOrder/${searchParams.get("id")}`)
       .then((result) => result.json()) 
       .then((data) => { 
-        setRowData(data);
-        const mT = rowData.materials.reduce((n, {total}) => n + total, 0);
-        const lT = rowData.labors.reduce((n, {total}) => n + total, 0);
-        const t = mT + lT;
-        setTotalMaterials(mT);
-        setTotalLabor(lT);
-        setTotal(t);
+        if(data != null){
+          setRowData(data);
+          const mT = data?.materials.reduce((n, {total}) => n + total, 0);
+          const lT = data?.labors.reduce((n, {total}) => n + total, 0);
+          const t = mT + lT;
+          setTotalMaterials(mT);
+          setTotalLabor(lT);
+          setTotal(t);
+        }
       });
   }, []);
 
@@ -51,7 +53,7 @@ export function PrintWo() {
             Work Date
           </td>
           <td>
-          {rowData.workDate}
+          {dateFormatter(rowData.workDate)}
           </td>
         </tr>
         <tr>
@@ -67,7 +69,7 @@ export function PrintWo() {
           Prepared Date
           </td>
           <td>
-          {rowData.preparedDate}
+          {dateFormatter(rowData.preparedDate)}
           </td>
         </tr>
         <tr>
@@ -100,7 +102,7 @@ export function PrintWo() {
               Total
             </td>
           </tr>
-          {rowData.materials.map((item, index) => (
+          {rowData?.materials.map((item, index) => (
             <tr className={index%2==1 ? 'even-row' : ''}>
               <td>
                 {item.description}
@@ -156,7 +158,7 @@ export function PrintWo() {
               Total
             </td>
           </tr>
-          {rowData.labors.map((item, index) => (
+          {rowData?.labors.map((item, index) => (
             <tr className={index%2==1 ? 'even-row' : ''}>
               <td>
                 {item.resource}

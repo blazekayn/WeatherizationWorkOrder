@@ -95,11 +95,12 @@ export function WorkOrders() {
 
   /* Format Date Cells */
   const dateFormatter = (params) => {
-    return new Date(params.value).toLocaleDateString("en-us", {
-      month: "2-digit",
-      day: "2-digit",
-      year: "numeric",
-    });
+    if(params.value){
+      return new Date(params.value).toLocaleDateString("en-us", {
+        month: '2-digit',day: '2-digit',year: 'numeric'});
+    }else{
+      return "-";
+    }
   };
 
   const numberFormatter = (params) => {
@@ -309,7 +310,11 @@ export function WorkOrders() {
     }).then((response) => response.json())
     .then((data) => {
       console.log("in here", data);
-      updateMaterials(data.materials);
+      if(!data.success){
+        alert(data.message);
+      }else{
+        updateMaterials(data.materials);
+      }
     });
   };
 
@@ -396,6 +401,7 @@ export function WorkOrders() {
       body: JSON.stringify({
         id: newWoId,
         consumer: consumer,
+        workDate: workDate,
         preparedBy: preparedBy,
         description: description,
         lastModifiedBy: globalUser,
