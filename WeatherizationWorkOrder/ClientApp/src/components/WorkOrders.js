@@ -23,7 +23,7 @@ export function WorkOrders() {
   const [consumer, setConsumer] = useState("");
   const [userData, setUserData] = useState([]);
   const [preparedBy, setPreparedBy] = useState("");
-  const [globalUser, setGlobalUser] = useState([]);
+  const [globalUser, setGlobalUser] = useState("");
   const [itemData, setItemData] = useState([]);
   const [selectedItem, setSelectedItem] = useState(-1);
   const [newMatrialData, setNewMaterialData] = useState([]);
@@ -37,7 +37,7 @@ export function WorkOrders() {
   const [laborHours, setLaborHours] = useState("");
   const [laborCost, setLaborCost] = useState("");
   const [selectedLabor, setSelectedLabor] = useState(null);
-  const [workDate, setWorkDate] = useState(null);
+  const [workDate, setWorkDate] = useState("");
   const [selectedItemDDValue,setSelectedItemDDValue] = useState(-1);
   const [printFromDate, setPrintFromDate] = useState("");
   const [printToDate, setPrintToDate] = useState("");
@@ -71,8 +71,9 @@ export function WorkOrders() {
     let gName = localStorage.getItem("gUserName");
     if (gName) {
       setGlobalUser(gName);
+      setPreparedBy(gName);
     }
-  });
+  }, []);
 
   const toggle = () => {
     setModal(!modal);
@@ -405,7 +406,7 @@ export function WorkOrders() {
       body: JSON.stringify({
         id: newWoId,
         consumer: consumer,
-        workDate: workDate,
+        workDate: workDate ? workDate : null,
         preparedBy: preparedBy,
         description: description,
         lastModifiedBy: globalUser,
@@ -566,12 +567,12 @@ export function WorkOrders() {
                   name="preparedBy"
                   id="preparedBy"
                   onChange={handlePreparedBy}
+                  value={preparedBy}
                 >
                   {userData.map((user) => (
                     <option
                       value={user.name}
                       key={user.id}
-                      selected={preparedBy ? preparedBy == user.name : globalUser == user.name}
                     >
                       {user.name}
                     </option>
@@ -612,7 +613,7 @@ export function WorkOrders() {
                     onChange={handleSelectedItemChanged}
                     value={selectedItemDDValue}
                   >
-                    <option disabled selected value={-1}> -- select an material -- </option>
+                    <option disabled value={-1}> -- select an material -- </option>
                     {itemData.map((item) => (
                       <option
                         value={`${item.description} (${item.units})`}

@@ -34,11 +34,11 @@ namespace WeatherizationWorkOrder.Business
             var labor = await _workOrderDataProvider.ReadLabors(id);
             foreach (Material mat in material)
             {
-                await _workOrderDataProvider.DeleteMaterial(mat.Id);
+                await DeleteMaterial(mat.Id);
             }
             foreach(Labor lab in labor)
             {
-                await _workOrderDataProvider.DeleteLabor(lab.Id);
+                await DeleteLabor(lab.Id);
             }
             await _workOrderDataProvider.Delete(id);
         }

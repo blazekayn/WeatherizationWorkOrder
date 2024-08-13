@@ -3,14 +3,10 @@ import { Navbar, NavbarBrand, NavItem, NavLink, Input, Container, Row, Col } fro
 import { Link } from 'react-router-dom';
 import './NavMenu.css';
 
-const changeGlobalUser = (e) => {
-  let { value } = e.target;
-  localStorage.setItem("gUserName", value);
-}
 
 export function NavMenu() {
   const [userData, setUserData] = useState([]);
-  const [globalUser, setGlobalUser] = useState([]);
+  const [globalUser, setGlobalUser] = useState("");
 
   useEffect(() => {
     fetch(`user`)
@@ -25,6 +21,11 @@ export function NavMenu() {
     }
   })
 
+  const changeGlobalUser = (e) => {
+    let { value } = e.target;
+    setGlobalUser(value);
+    localStorage.setItem("gUserName", value);
+  }
     return (
       <header>
         <Navbar className="navbar-expand-sm" container light>
@@ -53,10 +54,11 @@ export function NavMenu() {
                 type="select"
                 name="currentUser"
                 id="currentUser"
+                value={globalUser}
                 onChange={changeGlobalUser}
               >
                 {userData.map((user) =>
-                    <option value={user.name} key={user.id} selected={globalUser == user.name}>{user.name}</option>
+                    <option value={user.name} key={user.id}>{user.name}</option>
                   )
                 }
               </Input>
