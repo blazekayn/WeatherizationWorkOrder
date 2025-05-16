@@ -21,9 +21,9 @@ namespace WeatherizationWorkOrder.Controllers
         }
 
         [HttpGet]
-        public async Task<List<WorkOrder>> Get()
+        public async Task<List<WorkOrder>> Get(bool onlyIncomplete)
         {
-            return await _workOrderProvider.GetAllWorkOrders();
+            return await _workOrderProvider.GetAllWorkOrders(onlyIncomplete);
         }
 
         [HttpGet]
@@ -76,6 +76,13 @@ namespace WeatherizationWorkOrder.Controllers
         public async Task<List<Material>> DeleteMaterial(int materialId)
         {
             return await _workOrderProvider.DeleteMaterial(materialId);
+        }
+
+        [HttpDelete]
+        [Route("materials")]
+        public async Task<List<Material>> DeleteMaterials([FromBody] List<int> materialIds)
+        {
+            return await _workOrderProvider.DeleteMaterials(materialIds);
         }
 
         [HttpDelete]

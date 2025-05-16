@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import '../print.css';
+import { dedupeMaterials } from './utils';
 
 export function PrintWo() {
   const [rowData, setRowData] = useState(null);
+  const [materials, setMaterials] = useState(null);
   const [totalMaterials, setTotalMaterials] = useState(0);
   const [totalLabor, setTotalLabor] = useState(0);
   const [total, setTotal] = useState(0);
@@ -21,6 +23,7 @@ export function PrintWo() {
           setTotalMaterials(mT);
           setTotalLabor(lT);
           setTotal(t);
+          setMaterials(dedupeMaterials(data?.materials));
         }
       });
   }, []);
@@ -102,7 +105,7 @@ export function PrintWo() {
               Total
             </td>
           </tr>
-          {rowData?.materials.map((item, index) => (
+          {materials?.map((item, index) => (
             <tr className={index%2==1 ? 'even-row' : ''}>
               <td>
                 {item.description}

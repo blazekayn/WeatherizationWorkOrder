@@ -1,9 +1,5 @@
-﻿using Azure.Core;
-using Azure.Identity;
-using WeatherizationWorkOrder.Data;
+﻿using WeatherizationWorkOrder.Data;
 using WeatherizationWorkOrder.Models;
-using System.Linq;
-using Microsoft.Data.SqlClient;
 
 namespace WeatherizationWorkOrder.Business
 {
@@ -43,9 +39,9 @@ namespace WeatherizationWorkOrder.Business
             await _workOrderDataProvider.Delete(id);
         }
 
-        public async Task<List<WorkOrder>> GetAllWorkOrders()
+        public async Task<List<WorkOrder>> GetAllWorkOrders(bool onlyIncomplete)
         {
-            var wos = await _workOrderDataProvider.Read();
+            var wos = await _workOrderDataProvider.Read(onlyIncomplete);
             List<WorkOrder> returns = new List<WorkOrder>();
             foreach (var workOrder in (List<WorkOrder>)wos)
             {
@@ -104,6 +100,17 @@ namespace WeatherizationWorkOrder.Business
         {
             await _workOrderDataProvider.AddLabor(request.WoId, request.Resource, request.Cost, request.Hours);
             return await _workOrderDataProvider.ReadLabors(request.WoId);
+        }
+
+        public async Task<List<Material>> DeleteMaterials(List<int> materialIds)
+        {
+            var materials = new List<Material>();
+            foreach(int i in materialIds)
+            {
+                materials = await DeleteMaterial(i);
+            }
+            //Return material list
+            return materials;
         }
 
         public async Task<List<Material>> DeleteMaterial(int materialId)

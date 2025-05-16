@@ -134,7 +134,7 @@ export function Items() {
       .then(response => {
         if(!response.ok){
           if(response.status == 400){
-            console.log("validation error");
+            alert("validation error");
           }
         } else{   
           toggle()
@@ -165,7 +165,7 @@ export function Items() {
     .then(response => {
       if(!response.ok){
         if(response.status == 400){
-          console.log("validation error");
+          alert("validation error");
         }
       } else{
         setEditing(false);
@@ -173,22 +173,6 @@ export function Items() {
       }
     })
   }
-
-  // const updateCount = (e) => {
-  //   setCount(e.target.value);
-  //   //calcualteCosts();
-  // }
-
-  // const calcualteCosts = () => {
-  //   console.log("Calculating costs", costPer, cost, count);
-  //   if(costPer && count){
-  //     console.log("set cost" + costPer * count);
-  //     setCost(costPer * count);
-  //   }else if(cost && count){
-  //     console.log("set cost per" + cost/count);
-  //     setCostPer(cost/count);
-  //   }
-  // }
 
   const handleUnits = (e) => {
     setItemUnits(e.target.value);
@@ -219,7 +203,6 @@ export function Items() {
     if(event.api.getSelectedNodes().length > 0){
       const data = event.api.getSelectedNodes()[0].data;
       setSelectedRow(data);
-      console.log(data);
       setCostPer(data.cost);
       setDescription(data.description);
       setStartingAmount(data.startingAmount);

@@ -1,0 +1,4 @@
+﻿ALTER TABLE WORK_ORDER
+ADD IsComplete bit DEFAULT 0;
+
+UPDATE WORK_ORDER SET IsComplete = 0;

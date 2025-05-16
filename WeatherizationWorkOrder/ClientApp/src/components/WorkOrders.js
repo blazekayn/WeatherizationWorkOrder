@@ -13,6 +13,7 @@ import {
   ModalFooter,
   FormGroup,
 } from "reactstrap";
+import { dedupeMaterials } from "./utils";
 
 export function WorkOrders() {
   const [rowData, setRowData] = useState([]);
@@ -41,20 +42,21 @@ export function WorkOrders() {
   const [selectedItemDDValue,setSelectedItemDDValue] = useState(-1);
   const [printFromDate, setPrintFromDate] = useState("");
   const [printToDate, setPrintToDate] = useState("");
+  const [showCompleted, setShowCompleted] = useState(false);
+  const [workOrderComplete, setWorkOrderComplete] = useState(false);
 
   useEffect(() => {
-    fetch(`workOrder`)
+    fetch(`workOrder?onlyIncomplete=${!showCompleted}`)
       .then((result) => result.json())
       .then((data) => {
         setRowData(data);
       });
-  }, [reload]);
+  }, [reload, showCompleted]);
 
   useEffect(() => {
     fetch(`user`)
       .then((result) => result.json())
       .then((data) => {
-        console.log(data);
         setUserData(data);
       });
   }, []);
@@ -208,8 +210,7 @@ export function WorkOrders() {
   const selectedMaterialChanged = (event) => {
     if (event.api.getSelectedNodes().length > 0) {
       const selected = event.api.getSelectedNodes()[0].data;
-      console.log(selected.id);
-      setSelectedMaterial(selected.id);
+      setSelectedMaterial(selected.ids);
     } else {
       setSelectedMaterial(null);
     }
@@ -219,7 +220,6 @@ export function WorkOrders() {
   const selectedLaborChanged = (event) => {
     if (event.api.getSelectedNodes().length > 0) {
       const selected = event.api.getSelectedNodes()[0].data;
-      console.log(selected.id);
       setSelectedLabor(selected.id);
     } else {
       setSelectedLabor(null);
@@ -229,7 +229,6 @@ export function WorkOrders() {
   const onSelectionChanged = (event) => {
     if (event.api.getSelectedNodes().length > 0) {
       const newRow = event.api.getSelectedNodes()[0].data;
-      console.log(newRow.id);
       editWorkOrder(newRow.id);
       setModal(true);
     } else {
@@ -268,7 +267,9 @@ export function WorkOrders() {
   }
 
   const updateMaterials = (materials) => {
-    setNewMaterialData(materials);
+    var dedupe = dedupeMaterials(materials);
+
+    setNewMaterialData(dedupe);
     setMaterialCostTotal(materials?.reduce((n, {total}) => n + total, 0));
     setNewMaterialAmount("");
     setSelectedItem(-1);
@@ -290,55 +291,61 @@ export function WorkOrders() {
     var item = itemData.find(
       (i) => `${i.description} (${i.units})` === e.target.value
     );
-    console.log(e.target.value, item);
     setSelectedItem(item);
     setSelectedItemDDValue(e.target.value);
   };
 
   const addItemToMaterials = () => {
-    fetch(`workOrder/AddMaterial`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        description: selectedItem.description,
-        units: selectedItem.units,
-        woId: newWoId,
-        used: newMaterialAmount,
-      }),
-    }).then((response) => response.json())
-    .then((data) => {
-      console.log("in here", data);
-      if(!data.success){
-        alert(data.message);
-      }else{
-        updateMaterials(data.materials);
-      }
-    });
+    if(selectedItem && selectedItem.description && newMaterialAmount && newMaterialAmount > 0){
+      fetch(`workOrder/AddMaterial`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          description: selectedItem.description,
+          units: selectedItem.units,
+          woId: newWoId,
+          used: newMaterialAmount,
+        }),
+      }).then((response) => response.json())
+      .then((data) => {
+        if(!data.success){
+          alert(data.message);
+        }else{
+          updateMaterials(data.materials);
+        }
+      });
+    }else{
+      alert("Invalid Material selection or amount.");
+    }
   };
 
   const addLabor = () => {
-    fetch(`workOrder/AddLabor`, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        woId: newWoId,
-        resource: laborResource,
-        cost: laborCost,
-        hours: laborHours,
-      }),
-    }).then((response) => response.json())
-    .then((data) => {
-      updateLabor(data);
-      setLaborResource("");
-      setLaborCost("");
-      setLaborHours("");
-    });
+    if(laborResource && laborCost && laborHours && laborCost > 0 && laborHours > 0){
+      fetch(`workOrder/AddLabor`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          woId: newWoId,
+          resource: laborResource,
+          cost: laborCost,
+          hours: laborHours,
+        }),
+      }).then((response) => response.json())
+      .then((data) => {
+        updateLabor(data);
+        setLaborResource("");
+        setLaborCost("");
+        setLaborHours("");
+      });
+    }else{
+      alert("Invalid Labor entry.");
+    }
   }
 
   const createWorkOrder = () => {
@@ -375,10 +382,10 @@ export function WorkOrders() {
     fetch(`workOrder/${id}`)
       .then((result) => result.json())
       .then((data) => {
-        console.log(data);
         setConsumer(data.consumer);
         setDescription(data.description);
         setPreparedBy(data.preparedBy);
+        setWorkOrderComplete(data.isComplete);
         updateMaterials(data.materials);
         updateLabor(data.labors);
         if(data.workDate){
@@ -410,11 +417,12 @@ export function WorkOrders() {
         preparedBy: preparedBy,
         description: description,
         lastModifiedBy: globalUser,
+        isComplete: workOrderComplete,
       }),
     }).then((response) => {
       if (!response.ok) {
         if (response.status == 400) {
-          console.log("validation error");
+          alert("validation error");
         }
       } else {
         toggle();
@@ -434,7 +442,7 @@ export function WorkOrders() {
       }).then((response) => {
         if (!response.ok) {
           if (response.status == 400) {
-            console.log("validation error");
+            alert("validation error");
           }
         } else {
           toggle();
@@ -446,12 +454,13 @@ export function WorkOrders() {
   const deleteMaterial = () => {
     const doit = window.confirm("Are you sure you want to Delete? It cannot be restored. Materials will be re-added to inventory.");
     if(doit && selectedMaterial){
-      fetch(`workOrder/materials/${selectedMaterial}`, {
+      fetch(`workOrder/materials`, {
         method: "DELETE",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(selectedMaterial)
       }).then((response) => response.json())
       .then((data) => {
         updateMaterials(data);
@@ -470,10 +479,17 @@ export function WorkOrders() {
         },
       }).then((response) => response.json())
       .then((data) => {
-        console.log(data);
         updateLabor(data);
       });
     }
+  }
+
+  const canAddMaterial = () => {
+    return selectedItem && selectedItem.description && newMaterialAmount && newMaterialAmount > 0;
+  }
+
+  const canAddLabor = () => {
+    return laborResource && laborCost && laborHours && laborCost > 0 && laborHours > 0;
   }
 
   const print = () => {
@@ -636,7 +652,7 @@ export function WorkOrders() {
                 </Col>
                 <Label sm={2}>{selectedItem && selectedItem != -1 ? selectedItem.units + " / " + selectedItem.remaining : ""}</Label>
                 <Col sm={1}>
-                  <Button color="primary" onClick={addItemToMaterials}>
+                  <Button color="primary" onClick={addItemToMaterials} disabled={!canAddMaterial()}>
                     Add
                   </Button>
                 </Col>
@@ -657,7 +673,7 @@ export function WorkOrders() {
             <Col sm={9}>
              {materialCostTotal ? formatter.format(materialCostTotal) : ""}
             </Col>
-              <Col sm={1}><Button color="danger" onClick={deleteMaterial}>
+              <Col sm={1}><Button color="danger" onClick={deleteMaterial} disabled={selectedMaterial == null}>
                 Delete
               </Button>
             </Col>
@@ -686,7 +702,7 @@ export function WorkOrders() {
                   <Input id="hours" name="hours" type="number" value={laborHours} onChange={handleLaborHours} />
                 </Col>
                 <Col sm={1}>
-                  <Button color="primary" onClick={addLabor}>
+                  <Button color="primary" onClick={addLabor} disabled={!canAddLabor()}>
                     Add
                   </Button>{" "}
                 </Col>
@@ -707,7 +723,7 @@ export function WorkOrders() {
             <Col sm={9}>
              {laborCostTotal ? formatter.format(laborCostTotal) : ""}
             </Col>
-              <Col sm={1}><Button color="danger" onClick={deleteLabor}>
+              <Col sm={1}><Button color="danger" onClick={deleteLabor} disabled={selectedLabor == null}>
                 Delete
               </Button>
             </Col>
@@ -735,6 +751,22 @@ export function WorkOrders() {
             </Col>
             <Col sm={2} style={{fontWeight:"bold", textAlign:"right"}}>
              {formatter.format((materialCostTotal ? materialCostTotal : 0) + (laborCostTotal ? laborCostTotal : 0))}
+            </Col>
+          </Row>
+          <hr/>
+          <Row>
+            <Col style={{fontWeight:"bold"}}>
+            <span style={{paddingRight:"2px"}}>Complete: </span>
+              <Input
+                id="chkIsComplete"
+                type="checkbox"
+                checked={workOrderComplete}
+                onChange={
+                  (e) => {
+                    setWorkOrderComplete(e.target.checked)
+                  }
+                }
+              />
             </Col>
           </Row>
         </ModalBody>
@@ -766,6 +798,20 @@ export function WorkOrders() {
               </Button>
         </Col>
       </Row>
+      <Input
+        id="chkShowAll"
+        type="checkbox"
+        checked={showCompleted}
+        onChange={
+          (e) => {
+            setShowCompleted(e.target.checked)
+          }
+        }
+      />
+      {' '}
+      <Label check>
+        Show Complete
+      </Label>
       <div
         className={"ag-theme-quartz-dark"}
         style={{ width: "100%", height: "500px" }}

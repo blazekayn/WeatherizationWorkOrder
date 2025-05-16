@@ -20,5 +20,6 @@ namespace WeatherizationWorkOrder.Models
 		public decimal LaborCost { get; set; }
 		public decimal MaterialCost { get; set; }
 		public decimal TotalCost { get; set; }
+		public bool IsComplete { get; set; }
 	}
 }

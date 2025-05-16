@@ -46,7 +46,6 @@ export function Users() {
   };
 
   const createUser = () => {
-    console.log(newName);
     fetch(`user`, {
       method: 'PUT',
       headers: {
@@ -58,7 +57,7 @@ export function Users() {
     .then(response => {
       if(!response.ok){
         if(response.status == 400){
-          console.log("validation error");
+          alert("validation error");
         }
       }else{
         setNewName("");
@@ -76,7 +75,6 @@ export function Users() {
   }
 
   const editUserModal = () => {
-    console.log(selectedRow);
     if(selectedRow !== null && selectedRow?.name){
       setEditName(selectedRow?.name);
       toggle();
@@ -84,7 +82,6 @@ export function Users() {
   }
   
   const saveEditUser = () => {
-    console.log(editName, selectedRow);
     fetch(`user/${selectedRow.id}`, {
       method: 'POST',
       headers: {
@@ -96,7 +93,7 @@ export function Users() {
     .then(response => {
       if(!response.ok){
         if(response.status == 400){
-          console.log("validation error");
+          alert("validation error");
         }
       }else{
         toggle();

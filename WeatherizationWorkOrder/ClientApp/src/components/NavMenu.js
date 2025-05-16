@@ -11,7 +11,7 @@ export function NavMenu() {
   useEffect(() => {
     fetch(`user`)
       .then((result) => result.json())
-      .then((data) => { console.log(data); setUserData(data)});
+      .then((data) => { setUserData(data)});
   }, []);
 
   useEffect(() => {

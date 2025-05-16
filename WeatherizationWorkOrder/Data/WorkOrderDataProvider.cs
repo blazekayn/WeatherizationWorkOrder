@@ -22,9 +22,9 @@ namespace WeatherizationWorkOrder.Data
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string sql = $"INSERT INTO [WORK_ORDER] (Consumer, PreparedBy, Description, PreparedDate, LastModifiedBy, LastModified) " +
+                string sql = $"INSERT INTO [WORK_ORDER] (Consumer, PreparedBy, Description, PreparedDate, LastModifiedBy, LastModified, IsComplete) " +
                              $"OUTPUT Inserted.ID " +
-                             $"VALUES (@Consumer, @PreparedBy, @Description, @PreparedDate, @LastModifiedBy, @LastModified)";
+                             $"VALUES (@Consumer, @PreparedBy, @Description, @PreparedDate, @LastModifiedBy, @LastModified, @IsComplete)";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.Add("@Consumer", SqlDbType.NVarChar).Value = item.Consumer;
@@ -33,6 +33,8 @@ namespace WeatherizationWorkOrder.Data
                     cmd.Parameters.Add("@PreparedDate", SqlDbType.DateTime).Value = item.PreparedDate;
                     cmd.Parameters.Add("@LastModifiedBy", SqlDbType.NVarChar).Value = item.LastModifiedBy;
                     cmd.Parameters.Add("@LastModified", SqlDbType.DateTime).Value = item.LastModified;
+                    cmd.Parameters.Add("@IsComplete", SqlDbType.Bit).Value = item.IsComplete;
+
 
                     return (int)await cmd.ExecuteScalarAsync();
                 }
@@ -63,6 +65,7 @@ namespace WeatherizationWorkOrder.Data
                                 WorkDate = dr.GetNullableDateTime("WorkDate"),
                                 LastModifiedBy = dr.GetString("LastModifiedBy"),
                                 LastModified = dr.GetDateTime("LastModified"),
+                                IsComplete = dr.GetBoolean("IsComplete")
                             };
                             return workOrder;
                         }
@@ -72,14 +75,22 @@ namespace WeatherizationWorkOrder.Data
             return default;
         }
 
-        public async Task<List<WorkOrder>> Read()
+        public async Task<List<WorkOrder>> Read(bool onlyIncomplete)
         {
             List<WorkOrder> items = new List<WorkOrder>();
 
             using (SqlConnection conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
-                string sql = $"SELECT * FROM WORK_ORDER ORDER BY ID DESC";
+                string sql = "";
+                if (onlyIncomplete)
+                {
+                    sql = $"SELECT * FROM WORK_ORDER WHERE IsComplete=0 ORDER BY ID DESC";
+                }
+                else
+                {
+                    sql = $"SELECT * FROM WORK_ORDER ORDER BY ID DESC";
+                }
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     using (SqlDataReader dr = cmd.ExecuteReader())
@@ -96,6 +107,7 @@ namespace WeatherizationWorkOrder.Data
                                 WorkDate = dr.GetNullableDateTime("WorkDate"),
                                 LastModifiedBy = dr.GetString("LastModifiedBy"),
                                 LastModified = dr.GetDateTime("LastModified"),
+                                IsComplete = dr.GetBoolean("IsComplete")
                             };
                             items.Add(workOrder);
                         }
@@ -131,6 +143,7 @@ namespace WeatherizationWorkOrder.Data
                                 WorkDate = dr.GetNullableDateTime("WorkDate"),
                                 LastModifiedBy = dr.GetString("LastModifiedBy"),
                                 LastModified = dr.GetDateTime("LastModified"),
+                                IsComplete = dr.GetBoolean("IsComplete")
                             };
                             items.Add(workOrder);
                         }
@@ -306,7 +319,8 @@ namespace WeatherizationWorkOrder.Data
                              $"WorkDate=@WorkDate, " +
                              $"Description=@Description, " +
                              $"LastModifiedBy=@LastModifiedBy, " +
-                             $"LastModified=@LastModified " +
+                             $"LastModified=@LastModified, " +
+                             $"IsComplete=@IsComplete " +
                              $"WHERE Id=@Id; ";
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
@@ -317,6 +331,7 @@ namespace WeatherizationWorkOrder.Data
                     cmd.Parameters.Add("@Description", SqlDbType.NVarChar).Value = workOrder.Description;
                     cmd.Parameters.Add("@LastModifiedBy", SqlDbType.NVarChar).Value = workOrder.LastModifiedBy;
                     cmd.Parameters.Add("@LastModified", SqlDbType.DateTime).Value = workOrder.LastModified;
+                    cmd.Parameters.Add("@IsComplete", SqlDbType.Bit).Value = workOrder.IsComplete;
 
                     await cmd.ExecuteNonQueryAsync();
                 }
