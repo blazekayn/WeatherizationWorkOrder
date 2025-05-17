@@ -1,6 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 
-namespace WeatherizationWorkOrder.Data
+namespace WeatherizationWorkOrder.Data.Extensions
 {
     public static class ReaderExtensions
     {
@@ -8,8 +8,8 @@ namespace WeatherizationWorkOrder.Data
         {
             var col = reader.GetOrdinal(name);
             return reader.IsDBNull(col) ?
-                        (DateTime?)null :
-                        (DateTime?)reader.GetDateTime(col);
+                        null :
+                        reader.GetDateTime(col);
         }
     }
 }

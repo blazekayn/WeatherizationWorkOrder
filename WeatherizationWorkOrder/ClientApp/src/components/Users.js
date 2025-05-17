@@ -170,12 +170,14 @@ export function Users() {
         <Button
           color="success"
           onClick={editUserModal}
+          disabled={!selectedRow}
         >
           Edit User
         </Button>{' '}
         <Button
           color="danger"
           onClick={deleteUser}
+          disabled={!selectedRow}
         >
           Delete User
         </Button>

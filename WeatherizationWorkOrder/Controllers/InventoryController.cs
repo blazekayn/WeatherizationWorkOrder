@@ -7,17 +7,9 @@ namespace WeatherizationWorkOrder.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class InventoryController : ControllerBase
+    public class InventoryController(IInventoryProvider inventoryProvider) : ControllerBase
     {
-        private readonly ILogger<InventoryController> _logger;
-        private readonly IInventoryProvider _inventoryProvider;
-
-        public InventoryController(ILogger<InventoryController> logger,
-            IInventoryProvider inventoryProvider)
-        {
-            _logger = logger;
-            _inventoryProvider = inventoryProvider;
-        }
+        private readonly IInventoryProvider _inventoryProvider = inventoryProvider;
 
         [HttpGet("{id}")]
         public async Task<InventoryItem> Get(int id)

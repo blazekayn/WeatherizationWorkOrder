@@ -8,17 +8,9 @@ namespace WeatherizationWorkOrder.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WorkOrderController : ControllerBase
+    public class WorkOrderController(IWorkOrderProvider workOrderProvider) : ControllerBase
     {
-        private readonly ILogger<WorkOrderController> _logger;
-        private readonly WorkOrderProvider _workOrderProvider;
-
-        public WorkOrderController(ILogger<WorkOrderController> logger,
-            WorkOrderProvider workOrderProvider)
-        {
-            _logger = logger;
-            _workOrderProvider = workOrderProvider;
-        }
+        private readonly IWorkOrderProvider _workOrderProvider = workOrderProvider;
 
         [HttpGet]
         public async Task<List<WorkOrder>> Get(bool onlyIncomplete)

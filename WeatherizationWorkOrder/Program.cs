@@ -1,5 +1,6 @@
 using WeatherizationWorkOrder.Business;
 using WeatherizationWorkOrder.Data;
+using WeatherizationWorkOrder.Data.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,10 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<IInventoryProvider, InventoryProvider>();
-builder.Services.AddSingleton<InventoryDataProvider>();
-builder.Services.AddSingleton<UserDataProvider>();
-builder.Services.AddSingleton<WorkOrderDataProvider>();
-builder.Services.AddSingleton<WorkOrderProvider>();
+builder.Services.AddSingleton<IInventoryDataProvider, InventoryDataProvider>();
+builder.Services.AddSingleton<IUserDataProvider, UserDataProvider>();
+builder.Services.AddSingleton<IWorkOrderDataProvider, WorkOrderDataProvider>();
+builder.Services.AddSingleton<IWorkOrderProvider, WorkOrderProvider>();
 
 var app = builder.Build();
 

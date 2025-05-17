@@ -2,23 +2,16 @@
 using System.Collections.Generic;
 using WeatherizationWorkOrder.Business;
 using WeatherizationWorkOrder.Data;
+using WeatherizationWorkOrder.Data.Interfaces;
 using WeatherizationWorkOrder.Models;
 
 namespace WeatherizationWorkOrder.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class UserController : ControllerBase
+    public class UserController(IUserDataProvider userProvider) : ControllerBase
     {
-        private readonly ILogger<InventoryController> _logger;
-        private readonly UserDataProvider _userProvider;
-
-        public UserController(ILogger<InventoryController> logger,
-            UserDataProvider userProvider)
-        {
-            _logger = logger;
-            _userProvider = userProvider;
-        }
+        private readonly IUserDataProvider _userProvider = userProvider;
 
         [HttpGet]
         public async Task<List<User>> Get()

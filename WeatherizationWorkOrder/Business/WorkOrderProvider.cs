@@ -1,17 +1,28 @@
 ﻿using WeatherizationWorkOrder.Data;
+using WeatherizationWorkOrder.Data.Interfaces;
 using WeatherizationWorkOrder.Models;
 
 namespace WeatherizationWorkOrder.Business
 {
-    public class WorkOrderProvider
+    public interface IWorkOrderProvider
     {
-        private readonly WorkOrderDataProvider _workOrderDataProvider;
-        private readonly InventoryDataProvider _inventoryDataProvider;
-        public WorkOrderProvider(WorkOrderDataProvider workOrderDataProvider, InventoryDataProvider inventoryDataProvider)
-        {
-            _workOrderDataProvider = workOrderDataProvider;
-            _inventoryDataProvider = inventoryDataProvider;
-        }
+        Task<List<Labor>> AddLaborToWorkOrder(AddLaborRequest request);
+        Task<AddMaterialResponse> AddMaterialToWorkOrder(AddMaterialRequest request);
+        Task<int> CreateWorkOrder(WorkOrder workOrder);
+        Task<List<Labor>> DeleteLabor(int id);
+        Task<List<Material>> DeleteMaterial(int materialId);
+        Task<List<Material>> DeleteMaterials(List<int> materialIds);
+        Task DeleteWorkOrder(int id);
+        Task<List<WorkOrder>> GetAllWorkOrders(bool onlyIncomplete);
+        Task<List<WorkOrder>> GetAllWorkOrders(DateTime from, DateTime to);
+        Task<WorkOrder> GetWorkOrderByID(int id);
+        Task UpdateWorkOrder(WorkOrder workOrder);
+    }
+
+    public class WorkOrderProvider(IWorkOrderDataProvider workOrderDataProvider, IInventoryDataProvider inventoryDataProvider) : IWorkOrderProvider
+    {
+        private readonly IWorkOrderDataProvider _workOrderDataProvider = workOrderDataProvider;
+        private readonly IInventoryDataProvider _inventoryDataProvider = inventoryDataProvider;
 
         public async Task<int> CreateWorkOrder(WorkOrder workOrder)
         {
@@ -32,7 +43,7 @@ namespace WeatherizationWorkOrder.Business
             {
                 await DeleteMaterial(mat.Id);
             }
-            foreach(Labor lab in labor)
+            foreach (Labor lab in labor)
             {
                 await DeleteLabor(lab.Id);
             }
@@ -42,7 +53,7 @@ namespace WeatherizationWorkOrder.Business
         public async Task<List<WorkOrder>> GetAllWorkOrders(bool onlyIncomplete)
         {
             var wos = await _workOrderDataProvider.Read(onlyIncomplete);
-            List<WorkOrder> returns = new List<WorkOrder>();
+            List<WorkOrder> returns = [];
             foreach (var workOrder in (List<WorkOrder>)wos)
             {
                 returns.Add(await SetSubProperties(workOrder));
@@ -60,7 +71,7 @@ namespace WeatherizationWorkOrder.Business
                 to = DateTime.Now;
             }
             var wos = await _workOrderDataProvider.Read(from, to);
-            List<WorkOrder> returns = new List<WorkOrder>();
+            List<WorkOrder> returns = [];
             foreach (var workOrder in (List<WorkOrder>)wos)
             {
                 returns.Add(await SetSubProperties(workOrder));
@@ -105,7 +116,7 @@ namespace WeatherizationWorkOrder.Business
         public async Task<List<Material>> DeleteMaterials(List<int> materialIds)
         {
             var materials = new List<Material>();
-            foreach(int i in materialIds)
+            foreach (int i in materialIds)
             {
                 materials = await DeleteMaterial(i);
             }
@@ -117,6 +128,10 @@ namespace WeatherizationWorkOrder.Business
         {
             //Get the DB Item
             var material = await _workOrderDataProvider.ReadMaterial(materialId);
+            if(material == null || material.InventoryItemId == null || material.WorkOrderId == null)
+            {
+                throw new ArgumentException("Bad material id.");
+            }
             var item = await _inventoryDataProvider.Read((int)material.InventoryItemId);
             //Add to Inventory
             item.Remaining += material.AmountUsed;
@@ -124,20 +139,24 @@ namespace WeatherizationWorkOrder.Business
             //Remove Item
             await _workOrderDataProvider.DeleteMaterial(materialId);
             //Return material list
-            return await _workOrderDataProvider.ReadMaterials((int)material.WorkOrderId); 
+            return await _workOrderDataProvider.ReadMaterials((int)material.WorkOrderId);
         }
 
         public async Task<List<Labor>> DeleteLabor(int id)
         {
             var labor = await _workOrderDataProvider.ReadLabor(id);
+            if(labor == null || labor.WorkOrderId == null)
+            {
+                throw new ArgumentException("Bad labor id.");
+            }
             await _workOrderDataProvider.DeleteLabor(id);
-            return await _workOrderDataProvider.ReadLabors((int)((Labor)labor).WorkOrderId);
+            return await _workOrderDataProvider.ReadLabors((int)labor.WorkOrderId);
         }
 
         public async Task<AddMaterialResponse> AddMaterialToWorkOrder(AddMaterialRequest request)
         {
             var remainingUnits = await _inventoryDataProvider.ReadByDesc(request.Description, request.Units);
-            if(remainingUnits == null || !remainingUnits.Any())
+            if (remainingUnits == null || remainingUnits.Count == 0)
             {
                 return new AddMaterialResponse
                 {
@@ -146,7 +165,7 @@ namespace WeatherizationWorkOrder.Business
                 };
             }
             var total = remainingUnits.Sum(item => item.Remaining);
-            if(total < request.Used)
+            if (total < request.Used)
             {
                 return new AddMaterialResponse
                 {
@@ -154,7 +173,7 @@ namespace WeatherizationWorkOrder.Business
                     Message = $"Only {total} units of {request.Used} material in invetory."
                 };
             }
-            List<UsedItem> itemsUsed = new List<UsedItem>();
+            List<UsedItem> itemsUsed = [];
             decimal runningTotal = 0;
             foreach (var item in remainingUnits)
             {

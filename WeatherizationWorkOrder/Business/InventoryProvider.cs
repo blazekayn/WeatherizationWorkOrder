@@ -1,14 +1,12 @@
 ﻿using WeatherizationWorkOrder.Data;
+using WeatherizationWorkOrder.Data.Interfaces;
 using WeatherizationWorkOrder.Models;
 
 namespace WeatherizationWorkOrder.Business
 {
-    public class InventoryProvider : IInventoryProvider
+    public class InventoryProvider(IInventoryDataProvider inventoryDataProvider) : IInventoryProvider
     {
-        private readonly InventoryDataProvider _inventoryDataProvider;
-        public InventoryProvider(InventoryDataProvider inventoryDataProvider) { 
-            _inventoryDataProvider = inventoryDataProvider;
-        }
+        private readonly IInventoryDataProvider _inventoryDataProvider = inventoryDataProvider;
 
         public async Task CreateInventoryItem(InventoryItem item)
         {
