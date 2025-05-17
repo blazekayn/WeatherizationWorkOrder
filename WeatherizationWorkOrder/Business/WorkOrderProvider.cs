@@ -183,7 +183,7 @@ namespace WeatherizationWorkOrder.Business
                     itemsUsed.Add(new UsedItem
                     {
                         InventoryItem = item,
-                        amount = (request.Used - runningTotal)
+                        Amount = (request.Used - runningTotal)
                     });
                     runningTotal = request.Used;
                     break;
@@ -194,7 +194,7 @@ namespace WeatherizationWorkOrder.Business
                     itemsUsed.Add(new UsedItem
                     {
                         InventoryItem = item,
-                        amount = item.Remaining
+                        Amount = item.Remaining
                     });
                     item.Remaining = 0;
                 }
@@ -208,7 +208,7 @@ namespace WeatherizationWorkOrder.Business
                     await _inventoryDataProvider.Update(item.InventoryItem);
 
                     //add it to the work order
-                    await _workOrderDataProvider.AddMaterial(item.InventoryItem.Id, request.WoId, item.amount);
+                    await _workOrderDataProvider.AddMaterial(item.InventoryItem.Id, request.WoId, item.Amount);
 
                     //add it to the return object to be displayed on the front end?
                 }
