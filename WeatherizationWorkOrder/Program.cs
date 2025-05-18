@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using WeatherizationWorkOrder.Business;
 using WeatherizationWorkOrder.Data;
 using WeatherizationWorkOrder.Data.Interfaces;
@@ -14,6 +17,26 @@ builder.Services.AddSingleton<IUserDataProvider, UserDataProvider>();
 builder.Services.AddSingleton<IWorkOrderDataProvider, WorkOrderDataProvider>();
 builder.Services.AddSingleton<IWorkOrderProvider, WorkOrderProvider>();
 
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        var config = builder.Configuration.GetSection("JwtSettings");
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = config["Issuer"],
+            ValidAudience = config["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(config["Key"]!)
+            )
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -26,6 +49,9 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 
 app.MapControllerRoute(

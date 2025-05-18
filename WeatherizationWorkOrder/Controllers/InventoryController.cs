@@ -1,11 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using WeatherizationWorkOrder.Business;
 using WeatherizationWorkOrder.Models;
 
 namespace WeatherizationWorkOrder.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("[controller]")]
     public class InventoryController(IInventoryProvider inventoryProvider) : ControllerBase
     {

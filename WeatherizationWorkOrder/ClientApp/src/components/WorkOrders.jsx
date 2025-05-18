@@ -14,6 +14,7 @@ import {
   FormGroup,
 } from "reactstrap";
 import { dedupeMaterials } from "./utils";
+import api from '../api';
 
 export function WorkOrders() {
   const [rowData, setRowData] = useState([]);
@@ -62,11 +63,10 @@ export function WorkOrders() {
   }, []);
 
   useEffect(() => {
-    fetch(`inventory?showOOS=false&unique=true`)
-      .then((result) => result.json())
-      .then((data) => {
-        setItemData(data);
-      });
+    async function fetchInventoryData() {
+      setItemData(await fetchInventory());
+    }
+    fetchInventoryData();
   }, []);
 
   useEffect(() => {
@@ -76,6 +76,15 @@ export function WorkOrders() {
       setPreparedBy(gName);
     }
   }, []);
+
+  const fetchInventory = async () => {
+     try {
+      const response = await api.get(`inventory?showOOS=false&unique=true`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch inventory', error);
+    }
+  }
 
   const toggle = () => {
     setModal(!modal);
@@ -266,7 +275,7 @@ export function WorkOrders() {
     setPrintToDate(e.target.value);
   }
 
-  const updateMaterials = (materials) => {
+  const updateMaterials = async (materials) => {
     var dedupe = dedupeMaterials(materials);
 
     setNewMaterialData(dedupe);
@@ -274,12 +283,7 @@ export function WorkOrders() {
     setNewMaterialAmount("");
     setSelectedItem(-1);
     setSelectedItemDDValue(-1);
-
-    fetch(`inventory?showOOS=false&unique=true`)
-      .then((result) => result.json())
-      .then((data) => {
-        setItemData(data);
-      });
+    setItemData(await fetchInventory());
   }
 
   const updateLabor = (labor) => {
