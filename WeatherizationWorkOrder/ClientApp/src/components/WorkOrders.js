@@ -43,7 +43,7 @@ export function WorkOrders() {
   const [printFromDate, setPrintFromDate] = useState("");
   const [printToDate, setPrintToDate] = useState("");
   const [showCompleted, setShowCompleted] = useState(false);
-  const [workOrderComplete, setWorkOrderComplete] = useState(false);
+    const [workOrderComplete, setWorkOrderComplete] = useState(false);
 
   useEffect(() => {
     fetch(`workOrder?onlyIncomplete=${!showCompleted}`)
@@ -492,13 +492,13 @@ export function WorkOrders() {
     return laborResource && laborCost && laborHours && laborCost > 0 && laborHours > 0;
   }
 
-  const print = () => {
-    window.location = `/#/printwos?from=${encodeURIComponent(printFromDate)}&to=${encodeURIComponent(printToDate)}`;
-  }
+const print = () => {
+    window.location.hash = `#/printwos?from=${encodeURIComponent(printFromDate)}&to=${encodeURIComponent(printToDate)}`;
+}
 
-  const printWo = () => {
-    window.location = `/#/printwo?id=${newWoId}`;
-  }
+const printWo = () => {
+    window.location.hash = `#/printwo?id=${newWoId}`;
+}
 
   return (
     <>

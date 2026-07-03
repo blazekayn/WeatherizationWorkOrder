@@ -196,7 +196,7 @@ export function Items() {
   }
 
   const print = () => {
-    window.location = '/#/printitems';
+      window.location.hash = `#/printitems`;
   }
 
   const onSelectionChanged = (event) => {

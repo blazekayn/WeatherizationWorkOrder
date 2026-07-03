@@ -11,7 +11,7 @@ const rootElement = document.getElementById('root');
 const root = createRoot(rootElement);
 
 root.render(
-  <HashRouter basename={baseUrl}>
+  <HashRouter>
     <App />
   </HashRouter>);
 
